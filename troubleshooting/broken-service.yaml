@@ -1,6 +1,8 @@
+# Lab 2: Service with no endpoints. The selector matches no pod labels and the port is wrong.
+# Investigate: kubectl get endpoints careslot-broken-svc -n careslot ; kubectl get pods -n careslot --show-labels
 apiVersion: v1
 kind: Service
-metadata: {name: broken-service, namespace: taskboard}
+metadata: {name: careslot-broken-svc, namespace: careslot}
 spec:
-  selector: {app: label-that-does-not-exist}
-  ports: [{port: 8080, targetPort: 8080}]
+  selector: {app: careslot-backend}           # real pods use app.kubernetes.io/component=backend
+  ports: [{port: 8000, targetPort: 8080}]     # backend listens on 8000
