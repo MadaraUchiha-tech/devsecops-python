@@ -3,17 +3,18 @@
 | File | What |
 |---|---|
 | `CareSlot-presentation.pptx` / `.pdf` | 13-slide deck: overview, stack, architecture, CI/CD, DevSecOps, Terraform, Kubernetes/GitOps, autoscaling, observability, learnings. Speaker notes are in the PPTX. |
-| `careslot-presentation.mp4` | **Presentation video** (8:43, 1080p, no audio): slides, then the live walkthrough; chapters below |
+| `careslot-presentation.mp4` | **Presentation video** (8:43, 1080p, captions burned in, no audio): slides, then the live walkthrough; chapters below |
+| `careslot-presentation.srt` | The same captions as a subtitle file |
 | `VIDEO_SCRIPT.md` | Narration and the exact commands for each part of the video, in the order SUBMISSION.md asks for |
 | `recordings/` | Raw screen captures for B-roll or as a fallback |
 | `screenshots/` | Every screenshot GRADING.md asks for |
 | `evidence/` | The raw terminal output behind the terminal screenshots |
 | `slides-src/build-deck.js` | pptxgenjs script that generates the deck |
-| `video-src/` | ffmpeg assembly script used to build the video |
+| `video-src/` | Scripts used to build the video and its captions |
 
 ## Video chapters
 
-Silent video in the order GRADING.md asks for: the slides first, then a live walkthrough of the running system, captured on 16 Oct 2026. Each live section has an on-screen label. The CI section shows a real push going through the pipeline and Argo CD deploying the result. The Terraform, HPA and Grafana clips are sped up.
+Captioned video (no audio) in the order GRADING.md asks for: the slides first, then a live walkthrough of the running system, captured on 16 Oct 2026. Each live section has an on-screen label. The CI section shows a real push going through the pipeline and Argo CD deploying the result. The Terraform, HPA and Grafana clips are sped up.
 
 | Time | Section |
 |---|---|
