@@ -59,7 +59,7 @@ export default function App() {
           </svg>
           <div>
             <strong>CareSlot</strong>
-            <small>Front desk</small>
+            <small>Front desk · v2</small>
           </div>
         </div>
         <nav aria-label="Main">
