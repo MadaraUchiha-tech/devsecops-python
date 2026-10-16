@@ -1,76 +1,64 @@
-from fastapi import Depends, FastAPI, HTTPException, status
+import logging
+from contextlib import asynccontextmanager
+
+from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy import func, select
-from sqlalchemy.orm import Session
 from prometheus_fastapi_instrumentator import Instrumentator
+from sqlalchemy import text
+from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm import Session
 
 from .config import settings
-from .db import Base, engine, get_db
-from .models import Task
-from .schemas import StatsOut, TaskCreate, TaskOut, TaskUpdate
+from .db import SessionLocal, get_db
+from .routers import appointments, doctors, patients
+from .seed import seed_demo_data
 
-app = FastAPI(title=settings.app_name, version="1.0.0")
-app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
-Instrumentator().instrument(app).expose(app, endpoint="/metrics")
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")
+log = logging.getLogger("careslot")
 
-@app.on_event("startup")
-def startup():
-    # Production containers run Alembic before Uvicorn; create_all keeps tests self-contained.
-    Base.metadata.create_all(bind=engine)
 
-@app.get("/")
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    # Schema is owned by Alembic (run before Uvicorn in the container); here we only seed.
+    if settings.seed_demo_data:
+        with SessionLocal() as db:
+            if seed_demo_data(db):
+                log.info("Seeded demo doctors, patients and appointments")
+    yield
+
+
+app = FastAPI(
+    title=settings.app_name,
+    version=settings.app_version,
+    description="Clinic appointment scheduling API: doctors, patients and appointments.",
+    lifespan=lifespan,
+)
+app.add_middleware(CORSMiddleware, allow_origins=settings.cors_origins, allow_methods=["*"], allow_headers=["*"])
+Instrumentator(excluded_handlers=["/metrics", "/health", "/ready"]).instrument(app).expose(
+    app, endpoint="/metrics", include_in_schema=False
+)
+
+app.include_router(doctors.router)
+app.include_router(patients.router)
+app.include_router(appointments.router)
+
+
+@app.get("/", tags=["meta"])
 def root():
-    return {"service": settings.app_name, "version": "1.0.0", "docs": "/docs"}
+    return {"service": settings.app_name, "version": settings.app_version, "docs": "/docs"}
 
-@app.get("/health")
+
+@app.get("/health", tags=["meta"])
 def health():
+    """Liveness: the process is up and serving HTTP."""
     return {"status": "UP"}
 
-@app.get("/ready")
+
+@app.get("/ready", tags=["meta"])
 def ready(db: Session = Depends(get_db)):
-    db.execute(select(func.count(Task.id)))
+    """Readiness: the database is reachable, so this pod can take traffic."""
+    try:
+        db.execute(text("SELECT 1"))
+    except SQLAlchemyError as exc:
+        raise HTTPException(status_code=503, detail="Database unavailable") from exc
     return {"status": "READY"}
-
-@app.get("/api/tasks", response_model=list[TaskOut])
-def list_tasks(db: Session = Depends(get_db)):
-    return list(db.scalars(select(Task).order_by(Task.id.desc())))
-
-@app.get("/api/tasks/stats", response_model=StatsOut)
-def stats(db: Session = Depends(get_db)):
-    rows = db.execute(select(Task.status, func.count(Task.id)).group_by(Task.status)).all()
-    counts = {status: count for status, count in rows}
-    return StatsOut(total=sum(counts.values()), todo=counts.get("TODO", 0), inProgress=counts.get("IN_PROGRESS", 0), done=counts.get("DONE", 0))
-
-@app.get("/api/tasks/{task_id}", response_model=TaskOut)
-def get_task(task_id: int, db: Session = Depends(get_db)):
-    task = db.get(Task, task_id)
-    if not task:
-        raise HTTPException(status_code=404, detail="Task not found")
-    return task
-
-@app.post("/api/tasks", response_model=TaskOut, status_code=status.HTTP_201_CREATED)
-def create_task(payload: TaskCreate, db: Session = Depends(get_db)):
-    task = Task(**payload.model_dump())
-    db.add(task)
-    db.commit()
-    db.refresh(task)
-    return task
-
-@app.put("/api/tasks/{task_id}", response_model=TaskOut)
-def update_task(task_id: int, payload: TaskUpdate, db: Session = Depends(get_db)):
-    task = db.get(Task, task_id)
-    if not task:
-        raise HTTPException(status_code=404, detail="Task not found")
-    for key, value in payload.model_dump(exclude_unset=True).items():
-        setattr(task, key, value)
-    db.commit()
-    db.refresh(task)
-    return task
-
-@app.delete("/api/tasks/{task_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_task(task_id: int, db: Session = Depends(get_db)):
-    task = db.get(Task, task_id)
-    if not task:
-        raise HTTPException(status_code=404, detail="Task not found")
-    db.delete(task)
-    db.commit()
