@@ -1,0 +1,39 @@
+$ docker compose up --build -d
+ Image careslot-frontend:local Building 
+ Image careslot-backend:local Building 
+ Image careslot-frontend:local Built 
+ Image careslot-backend:local Built 
+ Network devsecops-python_default Creating 
+ Network devsecops-python_default Creating 
+ Network devsecops-python_default Created 
+ Network devsecops-python_default Created 
+ Container devsecops-python-postgres-1 Creating 
+ Container devsecops-python-postgres-1 Created 
+ Container devsecops-python-backend-1 Creating 
+ Container devsecops-python-backend-1 Created 
+ Container devsecops-python-frontend-1 Creating 
+ Container devsecops-python-frontend-1 Created 
+ Container devsecops-python-postgres-1 Starting 
+ Container devsecops-python-postgres-1 Started 
+ Container devsecops-python-postgres-1 Waiting 
+ Container devsecops-python-postgres-1 Healthy 
+ Container devsecops-python-backend-1 Starting 
+ Container devsecops-python-backend-1 Started 
+ Container devsecops-python-backend-1 Waiting 
+ Container devsecops-python-backend-1 Healthy 
+ Container devsecops-python-frontend-1 Starting 
+ Container devsecops-python-frontend-1 Started 
+
+$ docker compose ps
+SERVICE    IMAGE                     STATUS                            PORTS
+backend    careslot-backend:local    Up 10 seconds (healthy)           0.0.0.0:8000->8000/tcp, [::]:8000->8000/tcp
+frontend   careslot-frontend:local   Up 4 seconds (health: starting)   0.0.0.0:3000->8080/tcp, [::]:3000->8080/tcp
+postgres   postgres:16-alpine        Up 15 seconds (healthy)           0.0.0.0:5432->5432/tcp, [::]:5432->5432/tcp
+
+$ docker compose exec backend id ; docker compose exec frontend id
+uid=10001(appuser) gid=10001(appuser) groups=10001(appuser)
+uid=101(nginx) gid=101(nginx) groups=101(nginx)
+
+$ curl -s localhost:8000/health ; curl -s localhost:3000/api/doctors | jq length
+{"status":"UP"}
+5

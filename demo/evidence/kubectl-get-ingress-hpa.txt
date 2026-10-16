@@ -1,0 +1,9 @@
+$ kubectl get ingress,hpa -n careslot
+NAME                                 CLASS   HOSTS            ADDRESS        PORTS   AGE
+ingress.networking.k8s.io/careslot   nginx   careslot.local   192.168.58.2   80      8m25s
+
+NAME                                                   REFERENCE                     TARGETS       MINPODS   MAXPODS   REPLICAS   AGE
+horizontalpodautoscaler.autoscaling/careslot-backend   Deployment/careslot-backend   cpu: 6%/60%   2         6         2          8m25s
+
+$ kubectl get deploy careslot-backend -n careslot -o jsonpath="{..image}"
+ghcr.io/madarauchiha-tech/careslot-backend:a4a589bf579110bb0aeb97475eccff2cbb5c3817

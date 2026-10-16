@@ -1,0 +1,31 @@
+$ kubectl get application -n argocd
+NAME       SYNC STATUS   HEALTH STATUS
+careslot   Synced        Healthy
+
+$ argocd app get careslot --core
+Name:               argocd/careslot
+Project:            default
+Server:             https://kubernetes.default.svc
+Namespace:          careslot
+Source:
+- Repo:             https://github.com/MadaraUchiha-tech/devsecops-python.git
+  Target:           main
+  Path:             helm/careslot
+  Helm Values:      values.yaml,values-local.yaml
+SyncWindow:         Sync Allowed
+Sync Policy:        Automated (Prune)
+Sync Status:        Synced to main (4450625)
+Health Status:      Healthy
+
+GROUP                  KIND                     NAMESPACE  NAME                STATUS  HEALTH   HOOK  MESSAGE
+                       Secret                   careslot   careslot-db         Synced                 secret/careslot-db serverside-applied
+                       ConfigMap                careslot   careslot-dashboard  Synced                 configmap/careslot-dashboard serverside-applied
+                       Service                  careslot   careslot-frontend   Synced  Healthy        service/careslot-frontend serverside-applied
+                       Service                  careslot   careslot-backend    Synced  Healthy        service/careslot-backend serverside-applied
+                       Service                  careslot   careslot-postgres   Synced  Healthy        service/careslot-postgres serverside-applied
+apps                   Deployment               careslot   careslot-frontend   Synced  Healthy        deployment.apps/careslot-frontend serverside-applied
+apps                   Deployment               careslot   careslot-backend    Synced  Healthy        deployment.apps/careslot-backend serverside-applied
+autoscaling            HorizontalPodAutoscaler  careslot   careslot-backend    Synced  Healthy        horizontalpodautoscaler.autoscaling/careslot-backend serverside-applied
+apps                   StatefulSet              careslot   careslot-postgres   Synced  Healthy        statefulset.apps/careslot-postgres serverside-applied
+networking.k8s.io      Ingress                  careslot   careslot            Synced  Healthy        ingress.networking.k8s.io/careslot serverside-applied
+monitoring.coreos.com  ServiceMonitor           careslot   careslot-backend    Synced                 servicemonitor.monitoring.coreos.com/careslot-backend serverside-applied

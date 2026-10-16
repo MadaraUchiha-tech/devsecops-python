@@ -1,0 +1,14 @@
+# GitHub Actions run 38881684343 · job "Image - frontend" · Trivy gate
+$ trivy image --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 ghcr.io/madarauchiha-tech/careslot-frontend:a4a589bf579110bb0aeb97475eccff2cbb5c3817
+Report Summary
+
+┌──────────────────────────────────────────────────────────────────────────────────┬────────┬─────────────────┬─────────┐
+│                                      Target                                      │  Type  │ Vulnerabilities │ Secrets │
+├──────────────────────────────────────────────────────────────────────────────────┼────────┼─────────────────┼─────────┤
+│ ghcr.io/madarauchiha-tech/careslot-frontend:a4a589bf579110bb0aeb97475eccff2cbb5- │ alpine │        0        │    -    │
+│ c3817 (alpine 3.23.4)                                                            │        │                 │         │
+└──────────────────────────────────────────────────────────────────────────────────┴────────┴─────────────────┴─────────┘
+Legend:
+- '-': Not scanned
+- '0': Clean (no security findings detected)
+

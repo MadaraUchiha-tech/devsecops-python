@@ -1,0 +1,33 @@
+$ git log --oneline
+4450625 chore(gitops): deploy a4a589b to careslot [skip ci]
+a4a589b fix(gitops): stop Argo CD reporting StatefulSet volumeClaimTemplates drift
+aec8350 chore(gitops): deploy 40060d8 to careslot [skip ci]
+40060d8 docs: full technical README for CareSlot and a concurrent HPA load test
+a51097d ci: fix advisory IaC scan (single target) and move to checkout@v5
+9aa519d ci: test -> build -> Trivy -> GHCR -> kind smoke test -> GitOps promote
+8efde9b fix(helm): read-only root filesystem for Postgres (Trivy KSV-0014)
+2fc2724 feat(terraform): encrypt EKS secrets with a rotating KMS key
+fe7b358 fix(backend): serialise migrations and seeding across replicas
+fc6f795 docs(troubleshooting): CareSlot break/fix labs and table of starter-project bugs
+43b64a5 feat(k8s): namespace with pod security, quotas, monitoring values, Argo CD app
+be80fa1 feat(helm): careslot chart with ingress, HPA, ServiceMonitor and dashboard
+ab21445 feat(terraform): VPC and EKS as reusable modules with mock-AWS runner
+4187dde fix(security): upgrade FastAPI/Starlette and strip pip from runtime image
+53cd57f build(docker): non-root Nginx runtime and healthchecked compose stack
+12b4164 feat(frontend): CareSlot front-desk UI for schedule, patients and doctors
+8b2304a feat(backend): replace task API with CareSlot clinic scheduling API
+ce26962 chore: tighten .gitignore and remove duplicate root workflow file
+bab00cc submission.md added
+0bb8040 submission.md added
+0b52425 cicd updated
+919bac4 fix(ci): fix port-forward race condition with kubectl wait + readinessProbe
+97e133c ci: use kind-action for deploy job + add k8s manifests
+c9988f3 ci: restructure pipeline into separate test/build/scan/push/deploy jobs
+669602f fix(ci): lowercase image names using ${GITHUB_REPOSITORY_OWNER,,}
+6fc25f3 fix(ci): replace trivy-action with direct Trivy apt install + CLI scan
+77bf5c8 fix(ci): bump trivy-action from non-existent 0.30.0 to latest 0.36.0
+9a5c663 cicd updated
+5c6faf0 ci: use self-hosted runner for deploy job with local kind cluster
+0dae5f9 fix(tests): create DB tables before test run to fix 'no such table: tasks'
+c0311e9 initial commit
+3f3b8e4 Initial commit

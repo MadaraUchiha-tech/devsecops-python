@@ -1,0 +1,35 @@
+$ kubectl get hpa careslot-backend -n careslot   # during scripts/load-test.sh (60 workers)
+NAME               REFERENCE                     TARGETS         MINPODS   MAXPODS   REPLICAS   AGE
+careslot-backend   Deployment/careslot-backend   cpu: 417%/60%   2         6         6          11m
+
+$ kubectl describe hpa careslot-backend -n careslot | grep -A6 Events
+Events:
+  Type     Reason                        Age                  From                       Message
+  ----     ------                        ----                 ----                       -------
+  Normal   SuccessfulRescale             11m                  horizontal-pod-autoscaler  New size: 2; reason: Current number of replicas below Spec.MinReplicas
+  Warning  FailedGetResourceMetric       4m19s (x6 over 11m)  horizontal-pod-autoscaler  failed to get cpu utilization: unable to get metrics for resource cpu: 
+  Warning  FailedComputeMetricsReplicas  4m19s (x6 over 11m)  horizontal-pod-autoscaler  invalid metrics (1 invalid out of 1), first error is: failed to get cpu
+  Warning  FailedGetResourceMetric       3m34s (x7 over 10m)  horizontal-pod-autoscaler  failed to get cpu utilization: did not receive metrics for targeted pod
+  Warning  FailedComputeMetricsReplicas  3m34s (x7 over 10m)  horizontal-pod-autoscaler  invalid metrics (1 invalid out of 1), first error is: failed to get cpu
+  Normal   SuccessfulRescale             2m4s                 horizontal-pod-autoscaler  New size: 3; reason: cpu resource utilization (percentage of request) a
+
+$ kubectl get pods -n careslot -l app.kubernetes.io/component=backend
+NAME                                READY   STATUS    RESTARTS   AGE
+careslot-backend-86cc5dc844-5t2rq   1/1     Running   0          2m4s
+careslot-backend-86cc5dc844-7zhwz   1/1     Running   0          64s
+careslot-backend-86cc5dc844-84mlq   1/1     Running   0          4m47s
+careslot-backend-86cc5dc844-hsncq   1/1     Running   0          5m
+careslot-backend-86cc5dc844-l2g86   1/1     Running   0          64s
+careslot-backend-86cc5dc844-plvmg   1/1     Running   0          64s
+
+$ kubectl top pods -n careslot
+NAME                                CPU(cores)   MEMORY(bytes)   
+careslot-backend-86cc5dc844-5t2rq   440m         96Mi            
+careslot-backend-86cc5dc844-7zhwz   391m         93Mi            
+careslot-backend-86cc5dc844-84mlq   408m         97Mi            
+careslot-backend-86cc5dc844-hsncq   404m         95Mi            
+careslot-backend-86cc5dc844-l2g86   385m         91Mi            
+careslot-backend-86cc5dc844-plvmg   387m         92Mi            
+careslot-frontend-5c65455d6-wcz9r   1m           23Mi            
+careslot-frontend-5c65455d6-zp9q6   1m           23Mi            
+careslot-postgres-0                 383m         170Mi           

@@ -1,0 +1,7 @@
+$ kubectl get pods -n careslot -o wide
+NAME                                READY   STATUS    RESTARTS   AGE     IP            NODE       NOMINATED NODE   READINESS GATES
+careslot-backend-86cc5dc844-84mlq   1/1     Running   0          118s    10.244.0.38   careslot   <none>           <none>
+careslot-backend-86cc5dc844-hsncq   1/1     Running   0          2m11s   10.244.0.36   careslot   <none>           <none>
+careslot-frontend-5c65455d6-wcz9r   1/1     Running   0          2m11s   10.244.0.35   careslot   <none>           <none>
+careslot-frontend-5c65455d6-zp9q6   1/1     Running   0          2m6s    10.244.0.37   careslot   <none>           <none>
+careslot-postgres-0                 1/1     Running   0          8m25s   10.244.0.34   careslot   <none>           <none>

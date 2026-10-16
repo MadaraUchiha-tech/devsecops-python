@@ -1,0 +1,10 @@
+$ kubectl scale deploy careslot-frontend -n careslot --replicas=1   # manual drift, not in Git
+deployment.apps/careslot-frontend scaled
+$ kubectl get deploy careslot-frontend -n careslot
+NAME                READY   UP-TO-DATE   AVAILABLE   AGE
+careslot-frontend   2/1     2            2           12m
+
+# ...a few seconds later, Argo CD selfHeal reverts the drift to what Git says (replicas: 2)
+$ kubectl get deploy careslot-frontend -n careslot
+NAME                READY   UP-TO-DATE   AVAILABLE   AGE
+careslot-frontend   1/2     2            1           12m

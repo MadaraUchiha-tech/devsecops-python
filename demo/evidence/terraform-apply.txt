@@ -1,0 +1,708 @@
+data.aws_availability_zones.available: Reading...
+module.eks.data.aws_iam_policy_document.cluster_assume: Reading...
+module.eks.data.aws_iam_policy_document.node_assume: Reading...
+module.eks.data.aws_iam_policy_document.cluster_assume: Read complete after 0s [id=3552664922]
+module.eks.data.aws_iam_policy_document.node_assume: Read complete after 0s [id=2851119427]
+data.aws_availability_zones.available: Read complete after 0s [id=ap-south-1]
+
+Terraform used the selected providers to generate the following execution
+plan. Resource actions are indicated with the following symbols:
+  + create
+
+Terraform will perform the following actions:
+
+  # module.eks.aws_cloudwatch_log_group.cluster will be created
+  + resource "aws_cloudwatch_log_group" "cluster" {
+      + arn               = (known after apply)
+      + id                = (known after apply)
+      + log_group_class   = (known after apply)
+      + name              = "/aws/eks/careslot-dev/cluster"
+      + name_prefix       = (known after apply)
+      + retention_in_days = 7
+      + skip_destroy      = false
+      + tags_all          = {
+          + "Environment" = "dev"
+          + "ManagedBy"   = "terraform"
+          + "Project"     = "careslot"
+        }
+    }
+
+  # module.eks.aws_eks_cluster.this will be created
+  + resource "aws_eks_cluster" "this" {
+      + arn                           = (known after apply)
+      + bootstrap_self_managed_addons = true
+      + certificate_authority         = (known after apply)
+      + cluster_id                    = (known after apply)
+      + created_at                    = (known after apply)
+      + enabled_cluster_log_types     = [
+          + "api",
+          + "audit",
+          + "authenticator",
+        ]
+      + endpoint                      = (known after apply)
+      + id                            = (known after apply)
+      + identity                      = (known after apply)
+      + name                          = "careslot-dev"
+      + platform_version              = (known after apply)
+      + role_arn                      = (known after apply)
+      + status                        = (known after apply)
+      + tags_all                      = {
+          + "Environment" = "dev"
+          + "ManagedBy"   = "terraform"
+          + "Project"     = "careslot"
+        }
+      + version                       = "1.33"
+
+      + access_config {
+          + authentication_mode                         = "API_AND_CONFIG_MAP"
+          + bootstrap_cluster_creator_admin_permissions = true
+        }
+
+      + encryption_config {
+          + resources = [
+              + "secrets",
+            ]
+
+          + provider {
+              + key_arn = (known after apply)
+            }
+        }
+
+      + kubernetes_network_config (known after apply)
+
+      + upgrade_policy (known after apply)
+
+      + vpc_config {
+          + cluster_security_group_id = (known after apply)
+          + endpoint_private_access   = true
+          + endpoint_public_access    = true
+          + public_access_cidrs       = [
+              + "0.0.0.0/0",
+            ]
+          + security_group_ids        = (known after apply)
+          + subnet_ids                = (known after apply)
+          + vpc_id                    = (known after apply)
+        }
+    }
+
+  # module.eks.aws_eks_node_group.main will be created
+  + resource "aws_eks_node_group" "main" {
+      + ami_type               = (known after apply)
+      + arn                    = (known after apply)
+      + capacity_type          = "ON_DEMAND"
+      + cluster_name           = "careslot-dev"
+      + disk_size              = 30
+      + id                     = (known after apply)
+      + instance_types         = [
+          + "t3.medium",
+        ]
+      + labels                 = {
+          + "workload" = "general"
+        }
+      + node_group_name        = "careslot-dev-main"
+      + node_group_name_prefix = (known after apply)
+      + node_role_arn          = (known after apply)
+      + release_version        = (known after apply)
+      + resources              = (known after apply)
+      + status                 = (known after apply)
+      + subnet_ids             = (known after apply)
+      + tags_all               = {
+          + "Environment" = "dev"
+          + "ManagedBy"   = "terraform"
+          + "Project"     = "careslot"
+        }
+      + version                = (known after apply)
+
+      + node_repair_config (known after apply)
+
+      + scaling_config {
+          + desired_size = 2
+          + max_size     = 4
+          + min_size     = 2
+        }
+
+      + update_config {
+          + max_unavailable = 1
+        }
+    }
+
+  # module.eks.aws_iam_role.cluster will be created
+  + resource "aws_iam_role" "cluster" {
+      + arn                   = (known after apply)
+      + assume_role_policy    = jsonencode(
+            {
+              + Statement = [
+                  + {
+                      + Action    = "sts:AssumeRole"
+                      + Effect    = "Allow"
+                      + Principal = {
+                          + Service = "eks.amazonaws.com"
+                        }
+                    },
+                ]
+              + Version   = "2012-10-17"
+            }
+        )
+      + create_date           = (known after apply)
+      + force_detach_policies = false
+      + id                    = (known after apply)
+      + managed_policy_arns   = (known after apply)
+      + max_session_duration  = 3600
+      + name                  = "careslot-dev-cluster-role"
+      + name_prefix           = (known after apply)
+      + path                  = "/"
+      + tags_all              = {
+          + "Environment" = "dev"
+          + "ManagedBy"   = "terraform"
+          + "Project"     = "careslot"
+        }
+      + unique_id             = (known after apply)
+
+      + inline_policy (known after apply)
+    }
+
+  # module.eks.aws_iam_role.node will be created
+  + resource "aws_iam_role" "node" {
+      + arn                   = (known after apply)
+      + assume_role_policy    = jsonencode(
+            {
+              + Statement = [
+                  + {
+                      + Action    = "sts:AssumeRole"
+                      + Effect    = "Allow"
+                      + Principal = {
+                          + Service = "ec2.amazonaws.com"
+                        }
+                    },
+                ]
+              + Version   = "2012-10-17"
+            }
+        )
+      + create_date           = (known after apply)
+      + force_detach_policies = false
+      + id                    = (known after apply)
+      + managed_policy_arns   = (known after apply)
+      + max_session_duration  = 3600
+      + name                  = "careslot-dev-node-role"
+      + name_prefix           = (known after apply)
+      + path                  = "/"
+      + tags_all              = {
+          + "Environment" = "dev"
+          + "ManagedBy"   = "terraform"
+          + "Project"     = "careslot"
+        }
+      + unique_id             = (known after apply)
+
+      + inline_policy (known after apply)
+    }
+
+  # module.eks.aws_iam_role_policy_attachment.cluster will be created
+  + resource "aws_iam_role_policy_attachment" "cluster" {
+      + id         = (known after apply)
+      + policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
+      + role       = "careslot-dev-cluster-role"
+    }
+
+  # module.eks.aws_iam_role_policy_attachment.node["arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"] will be created
+  + resource "aws_iam_role_policy_attachment" "node" {
+      + id         = (known after apply)
+      + policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+      + role       = "careslot-dev-node-role"
+    }
+
+  # module.eks.aws_iam_role_policy_attachment.node["arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"] will be created
+  + resource "aws_iam_role_policy_attachment" "node" {
+      + id         = (known after apply)
+      + policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
+      + role       = "careslot-dev-node-role"
+    }
+
+  # module.eks.aws_iam_role_policy_attachment.node["arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"] will be created
+  + resource "aws_iam_role_policy_attachment" "node" {
+      + id         = (known after apply)
+      + policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
+      + role       = "careslot-dev-node-role"
+    }
+
+  # module.eks.aws_kms_alias.eks will be created
+  + resource "aws_kms_alias" "eks" {
+      + arn            = (known after apply)
+      + id             = (known after apply)
+      + name           = "alias/careslot-dev-eks"
+      + name_prefix    = (known after apply)
+      + target_key_arn = (known after apply)
+      + target_key_id  = (known after apply)
+    }
+
+  # module.eks.aws_kms_key.eks will be created
+  + resource "aws_kms_key" "eks" {
+      + arn                                = (known after apply)
+      + bypass_policy_lockout_safety_check = false
+      + customer_master_key_spec           = "SYMMETRIC_DEFAULT"
+      + deletion_window_in_days            = 7
+      + description                        = "careslot-dev EKS secrets encryption"
+      + enable_key_rotation                = true
+      + id                                 = (known after apply)
+      + is_enabled                         = true
+      + key_id                             = (known after apply)
+      + key_usage                          = "ENCRYPT_DECRYPT"
+      + multi_region                       = (known after apply)
+      + policy                             = (known after apply)
+      + rotation_period_in_days            = (known after apply)
+      + tags_all                           = {
+          + "Environment" = "dev"
+          + "ManagedBy"   = "terraform"
+          + "Project"     = "careslot"
+        }
+    }
+
+  # module.eks.aws_security_group.cluster will be created
+  + resource "aws_security_group" "cluster" {
+      + arn                    = (known after apply)
+      + description            = "Extra rules for the EKS control plane ENIs"
+      + egress                 = [
+          + {
+              + cidr_blocks      = [
+                  + "0.0.0.0/0",
+                ]
+              + from_port        = 0
+              + ipv6_cidr_blocks = []
+              + prefix_list_ids  = []
+              + protocol         = "-1"
+              + security_groups  = []
+              + self             = false
+              + to_port          = 0
+                # (1 unchanged attribute hidden)
+            },
+        ]
+      + id                     = (known after apply)
+      + ingress                = (known after apply)
+      + name                   = "careslot-dev-cluster-sg"
+      + name_prefix            = (known after apply)
+      + owner_id               = (known after apply)
+      + revoke_rules_on_delete = false
+      + tags                   = {
+          + "Name" = "careslot-dev-cluster-sg"
+        }
+      + tags_all               = {
+          + "Environment" = "dev"
+          + "ManagedBy"   = "terraform"
+          + "Name"        = "careslot-dev-cluster-sg"
+          + "Project"     = "careslot"
+        }
+      + vpc_id                 = (known after apply)
+    }
+
+  # module.vpc.aws_eip.nat will be created
+  + resource "aws_eip" "nat" {
+      + allocation_id        = (known after apply)
+      + arn                  = (known after apply)
+      + association_id       = (known after apply)
+      + carrier_ip           = (known after apply)
+      + customer_owned_ip    = (known after apply)
+      + domain               = "vpc"
+      + id                   = (known after apply)
+      + instance             = (known after apply)
+      + ipam_pool_id         = (known after apply)
+      + network_border_group = (known after apply)
+      + network_interface    = (known after apply)
+      + private_dns          = (known after apply)
+      + private_ip           = (known after apply)
+      + ptr_record           = (known after apply)
+      + public_dns           = (known after apply)
+      + public_ip            = (known after apply)
+      + public_ipv4_pool     = (known after apply)
+      + tags                 = {
+          + "Name" = "careslot-dev-nat-eip"
+        }
+      + tags_all             = {
+          + "Environment" = "dev"
+          + "ManagedBy"   = "terraform"
+          + "Name"        = "careslot-dev-nat-eip"
+          + "Project"     = "careslot"
+        }
+      + vpc                  = (known after apply)
+    }
+
+  # module.vpc.aws_internet_gateway.this will be created
+  + resource "aws_internet_gateway" "this" {
+      + arn      = (known after apply)
+      + id       = (known after apply)
+      + owner_id = (known after apply)
+      + tags     = {
+          + "Name" = "careslot-dev-igw"
+        }
+      + tags_all = {
+          + "Environment" = "dev"
+          + "ManagedBy"   = "terraform"
+          + "Name"        = "careslot-dev-igw"
+          + "Project"     = "careslot"
+        }
+      + vpc_id   = (known after apply)
+    }
+
+  # module.vpc.aws_nat_gateway.this will be created
+  + resource "aws_nat_gateway" "this" {
+      + allocation_id                      = (known after apply)
+      + association_id                     = (known after apply)
+      + connectivity_type                  = "public"
+      + id                                 = (known after apply)
+      + network_interface_id               = (known after apply)
+      + private_ip                         = (known after apply)
+      + public_ip                          = (known after apply)
+      + secondary_private_ip_address_count = (known after apply)
+      + secondary_private_ip_addresses     = (known after apply)
+      + subnet_id                          = (known after apply)
+      + tags                               = {
+          + "Name" = "careslot-dev-nat"
+        }
+      + tags_all                           = {
+          + "Environment" = "dev"
+          + "ManagedBy"   = "terraform"
+          + "Name"        = "careslot-dev-nat"
+          + "Project"     = "careslot"
+        }
+    }
+
+  # module.vpc.aws_route.private_nat will be created
+  + resource "aws_route" "private_nat" {
+      + destination_cidr_block = "0.0.0.0/0"
+      + id                     = (known after apply)
+      + instance_id            = (known after apply)
+      + instance_owner_id      = (known after apply)
+      + nat_gateway_id         = (known after apply)
+      + network_interface_id   = (known after apply)
+      + origin                 = (known after apply)
+      + route_table_id         = (known after apply)
+      + state                  = (known after apply)
+    }
+
+  # module.vpc.aws_route.public_internet will be created
+  + resource "aws_route" "public_internet" {
+      + destination_cidr_block = "0.0.0.0/0"
+      + gateway_id             = (known after apply)
+      + id                     = (known after apply)
+      + instance_id            = (known after apply)
+      + instance_owner_id      = (known after apply)
+      + network_interface_id   = (known after apply)
+      + origin                 = (known after apply)
+      + route_table_id         = (known after apply)
+      + state                  = (known after apply)
+    }
+
+  # module.vpc.aws_route_table.private will be created
+  + resource "aws_route_table" "private" {
+      + arn              = (known after apply)
+      + id               = (known after apply)
+      + owner_id         = (known after apply)
+      + propagating_vgws = (known after apply)
+      + route            = (known after apply)
+      + tags             = {
+          + "Name" = "careslot-dev-private-rt"
+        }
+      + tags_all         = {
+          + "Environment" = "dev"
+          + "ManagedBy"   = "terraform"
+          + "Name"        = "careslot-dev-private-rt"
+          + "Project"     = "careslot"
+        }
+      + vpc_id           = (known after apply)
+    }
+
+  # module.vpc.aws_route_table.public will be created
+  + resource "aws_route_table" "public" {
+      + arn              = (known after apply)
+      + id               = (known after apply)
+      + owner_id         = (known after apply)
+      + propagating_vgws = (known after apply)
+      + route            = (known after apply)
+      + tags             = {
+          + "Name" = "careslot-dev-public-rt"
+        }
+      + tags_all         = {
+          + "Environment" = "dev"
+          + "ManagedBy"   = "terraform"
+          + "Name"        = "careslot-dev-public-rt"
+          + "Project"     = "careslot"
+        }
+      + vpc_id           = (known after apply)
+    }
+
+  # module.vpc.aws_route_table_association.private[0] will be created
+  + resource "aws_route_table_association" "private" {
+      + id             = (known after apply)
+      + route_table_id = (known after apply)
+      + subnet_id      = (known after apply)
+    }
+
+  # module.vpc.aws_route_table_association.private[1] will be created
+  + resource "aws_route_table_association" "private" {
+      + id             = (known after apply)
+      + route_table_id = (known after apply)
+      + subnet_id      = (known after apply)
+    }
+
+  # module.vpc.aws_route_table_association.public[0] will be created
+  + resource "aws_route_table_association" "public" {
+      + id             = (known after apply)
+      + route_table_id = (known after apply)
+      + subnet_id      = (known after apply)
+    }
+
+  # module.vpc.aws_route_table_association.public[1] will be created
+  + resource "aws_route_table_association" "public" {
+      + id             = (known after apply)
+      + route_table_id = (known after apply)
+      + subnet_id      = (known after apply)
+    }
+
+  # module.vpc.aws_subnet.private[0] will be created
+  + resource "aws_subnet" "private" {
+      + arn                                            = (known after apply)
+      + assign_ipv6_address_on_creation                = false
+      + availability_zone                              = "ap-south-1a"
+      + availability_zone_id                           = (known after apply)
+      + cidr_block                                     = "10.20.1.0/24"
+      + enable_dns64                                   = false
+      + enable_resource_name_dns_a_record_on_launch    = false
+      + enable_resource_name_dns_aaaa_record_on_launch = false
+      + id                                             = (known after apply)
+      + ipv6_cidr_block_association_id                 = (known after apply)
+      + ipv6_native                                    = false
+      + map_public_ip_on_launch                        = false
+      + owner_id                                       = (known after apply)
+      + private_dns_hostname_type_on_launch            = (known after apply)
+      + tags                                           = {
+          + "Name"                               = "careslot-dev-private-ap-south-1a"
+          + "kubernetes.io/cluster/careslot-dev" = "shared"
+          + "kubernetes.io/role/internal-elb"    = "1"
+        }
+      + tags_all                                       = {
+          + "Environment"                        = "dev"
+          + "ManagedBy"                          = "terraform"
+          + "Name"                               = "careslot-dev-private-ap-south-1a"
+          + "Project"                            = "careslot"
+          + "kubernetes.io/cluster/careslot-dev" = "shared"
+          + "kubernetes.io/role/internal-elb"    = "1"
+        }
+      + vpc_id                                         = (known after apply)
+    }
+
+  # module.vpc.aws_subnet.private[1] will be created
+  + resource "aws_subnet" "private" {
+      + arn                                            = (known after apply)
+      + assign_ipv6_address_on_creation                = false
+      + availability_zone                              = "ap-south-1b"
+      + availability_zone_id                           = (known after apply)
+      + cidr_block                                     = "10.20.2.0/24"
+      + enable_dns64                                   = false
+      + enable_resource_name_dns_a_record_on_launch    = false
+      + enable_resource_name_dns_aaaa_record_on_launch = false
+      + id                                             = (known after apply)
+      + ipv6_cidr_block_association_id                 = (known after apply)
+      + ipv6_native                                    = false
+      + map_public_ip_on_launch                        = false
+      + owner_id                                       = (known after apply)
+      + private_dns_hostname_type_on_launch            = (known after apply)
+      + tags                                           = {
+          + "Name"                               = "careslot-dev-private-ap-south-1b"
+          + "kubernetes.io/cluster/careslot-dev" = "shared"
+          + "kubernetes.io/role/internal-elb"    = "1"
+        }
+      + tags_all                                       = {
+          + "Environment"                        = "dev"
+          + "ManagedBy"                          = "terraform"
+          + "Name"                               = "careslot-dev-private-ap-south-1b"
+          + "Project"                            = "careslot"
+          + "kubernetes.io/cluster/careslot-dev" = "shared"
+          + "kubernetes.io/role/internal-elb"    = "1"
+        }
+      + vpc_id                                         = (known after apply)
+    }
+
+  # module.vpc.aws_subnet.public[0] will be created
+  + resource "aws_subnet" "public" {
+      + arn                                            = (known after apply)
+      + assign_ipv6_address_on_creation                = false
+      + availability_zone                              = "ap-south-1a"
+      + availability_zone_id                           = (known after apply)
+      + cidr_block                                     = "10.20.101.0/24"
+      + enable_dns64                                   = false
+      + enable_resource_name_dns_a_record_on_launch    = false
+      + enable_resource_name_dns_aaaa_record_on_launch = false
+      + id                                             = (known after apply)
+      + ipv6_cidr_block_association_id                 = (known after apply)
+      + ipv6_native                                    = false
+      + map_public_ip_on_launch                        = true
+      + owner_id                                       = (known after apply)
+      + private_dns_hostname_type_on_launch            = (known after apply)
+      + tags                                           = {
+          + "Name"                               = "careslot-dev-public-ap-south-1a"
+          + "kubernetes.io/cluster/careslot-dev" = "shared"
+          + "kubernetes.io/role/elb"             = "1"
+        }
+      + tags_all                                       = {
+          + "Environment"                        = "dev"
+          + "ManagedBy"                          = "terraform"
+          + "Name"                               = "careslot-dev-public-ap-south-1a"
+          + "Project"                            = "careslot"
+          + "kubernetes.io/cluster/careslot-dev" = "shared"
+          + "kubernetes.io/role/elb"             = "1"
+        }
+      + vpc_id                                         = (known after apply)
+    }
+
+  # module.vpc.aws_subnet.public[1] will be created
+  + resource "aws_subnet" "public" {
+      + arn                                            = (known after apply)
+      + assign_ipv6_address_on_creation                = false
+      + availability_zone                              = "ap-south-1b"
+      + availability_zone_id                           = (known after apply)
+      + cidr_block                                     = "10.20.102.0/24"
+      + enable_dns64                                   = false
+      + enable_resource_name_dns_a_record_on_launch    = false
+      + enable_resource_name_dns_aaaa_record_on_launch = false
+      + id                                             = (known after apply)
+      + ipv6_cidr_block_association_id                 = (known after apply)
+      + ipv6_native                                    = false
+      + map_public_ip_on_launch                        = true
+      + owner_id                                       = (known after apply)
+      + private_dns_hostname_type_on_launch            = (known after apply)
+      + tags                                           = {
+          + "Name"                               = "careslot-dev-public-ap-south-1b"
+          + "kubernetes.io/cluster/careslot-dev" = "shared"
+          + "kubernetes.io/role/elb"             = "1"
+        }
+      + tags_all                                       = {
+          + "Environment"                        = "dev"
+          + "ManagedBy"                          = "terraform"
+          + "Name"                               = "careslot-dev-public-ap-south-1b"
+          + "Project"                            = "careslot"
+          + "kubernetes.io/cluster/careslot-dev" = "shared"
+          + "kubernetes.io/role/elb"             = "1"
+        }
+      + vpc_id                                         = (known after apply)
+    }
+
+  # module.vpc.aws_vpc.this will be created
+  + resource "aws_vpc" "this" {
+      + arn                                  = (known after apply)
+      + cidr_block                           = "10.20.0.0/16"
+      + default_network_acl_id               = (known after apply)
+      + default_route_table_id               = (known after apply)
+      + default_security_group_id            = (known after apply)
+      + dhcp_options_id                      = (known after apply)
+      + enable_dns_hostnames                 = true
+      + enable_dns_support                   = true
+      + enable_network_address_usage_metrics = (known after apply)
+      + id                                   = (known after apply)
+      + instance_tenancy                     = "default"
+      + ipv6_association_id                  = (known after apply)
+      + ipv6_cidr_block                      = (known after apply)
+      + ipv6_cidr_block_network_border_group = (known after apply)
+      + main_route_table_id                  = (known after apply)
+      + owner_id                             = (known after apply)
+      + tags                                 = {
+          + "Name" = "careslot-dev-vpc"
+        }
+      + tags_all                             = {
+          + "Environment" = "dev"
+          + "ManagedBy"   = "terraform"
+          + "Name"        = "careslot-dev-vpc"
+          + "Project"     = "careslot"
+        }
+    }
+
+Plan: 28 to add, 0 to change, 0 to destroy.
+
+Changes to Outputs:
+  + cluster_endpoint   = (known after apply)
+  + cluster_name       = "careslot-dev"
+  + configure_kubectl  = "aws eks update-kubeconfig --region ap-south-1 --name careslot-dev"
+  + node_group_name    = "careslot-dev-main"
+  + private_subnet_ids = [
+      + (known after apply),
+      + (known after apply),
+    ]
+  + public_subnet_ids  = [
+      + (known after apply),
+      + (known after apply),
+    ]
+  + vpc_id             = (known after apply)
+module.eks.aws_iam_role.node: Creating...
+module.eks.aws_cloudwatch_log_group.cluster: Creating...
+module.eks.aws_iam_role.cluster: Creating...
+module.eks.aws_kms_key.eks: Creating...
+module.vpc.aws_eip.nat: Creating...
+module.vpc.aws_vpc.this: Creating...
+module.eks.aws_cloudwatch_log_group.cluster: Creation complete after 0s [id=/aws/eks/careslot-dev/cluster]
+module.eks.aws_iam_role.cluster: Creation complete after 0s [id=careslot-dev-cluster-role]
+module.vpc.aws_eip.nat: Creation complete after 0s [id=eipalloc-8d92bd0f6a2d01a03]
+module.eks.aws_iam_role.node: Creation complete after 0s [id=careslot-dev-node-role]
+module.eks.aws_iam_role_policy_attachment.node["arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"]: Creating...
+module.eks.aws_iam_role_policy_attachment.cluster: Creating...
+module.eks.aws_iam_role_policy_attachment.node["arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"]: Creating...
+module.eks.aws_iam_role_policy_attachment.node["arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"]: Creating...
+module.eks.aws_iam_role_policy_attachment.cluster: Creation complete after 0s [id=careslot-dev-cluster-role-20261016092732122200000001]
+module.eks.aws_iam_role_policy_attachment.node["arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"]: Creation complete after 0s [id=careslot-dev-node-role-20261016092732123700000002]
+module.eks.aws_iam_role_policy_attachment.node["arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"]: Creation complete after 0s [id=careslot-dev-node-role-20261016092732125500000003]
+module.eks.aws_iam_role_policy_attachment.node["arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"]: Creation complete after 0s [id=careslot-dev-node-role-20261016092732127100000004]
+module.eks.aws_kms_key.eks: Creation complete after 8s [id=be04e26c-d430-4ead-ad93-e9bb13266217]
+module.eks.aws_kms_alias.eks: Creating...
+module.eks.aws_kms_alias.eks: Creation complete after 0s [id=alias/careslot-dev-eks]
+module.vpc.aws_vpc.this: Still creating... [00m10s elapsed]
+module.vpc.aws_vpc.this: Creation complete after 10s [id=vpc-825dffe7d58eea376]
+module.vpc.aws_route_table.public: Creating...
+module.vpc.aws_internet_gateway.this: Creating...
+module.vpc.aws_route_table.private: Creating...
+module.vpc.aws_subnet.public[0]: Creating...
+module.vpc.aws_subnet.private[0]: Creating...
+module.vpc.aws_subnet.public[1]: Creating...
+module.eks.aws_security_group.cluster: Creating...
+module.vpc.aws_subnet.private[1]: Creating...
+module.vpc.aws_subnet.private[1]: Creation complete after 0s [id=subnet-68cdfced04a4bf90d]
+module.vpc.aws_subnet.private[0]: Creation complete after 0s [id=subnet-e3611f9f42be86fd3]
+module.vpc.aws_internet_gateway.this: Creation complete after 0s [id=igw-0ed6c836c131ef191]
+module.vpc.aws_route_table.public: Creation complete after 0s [id=rtb-c2e88cd2ea292828d]
+module.vpc.aws_route_table.private: Creation complete after 0s [id=rtb-99389601675bb974a]
+module.vpc.aws_route_table_association.private[1]: Creating...
+module.vpc.aws_route_table_association.private[0]: Creating...
+module.vpc.aws_route.public_internet: Creating...
+module.vpc.aws_route_table_association.private[1]: Creation complete after 0s [id=rtbassoc-d87e2746a58916721]
+module.vpc.aws_route_table_association.private[0]: Creation complete after 0s [id=rtbassoc-a9b2a37c2c71ebecf]
+module.eks.aws_security_group.cluster: Creation complete after 0s [id=sg-c40fd76d94b6861a6]
+module.vpc.aws_route.public_internet: Creation complete after 0s [id=r-rtb-c2e88cd2ea292828d1080289494]
+module.vpc.aws_subnet.public[1]: Still creating... [00m10s elapsed]
+module.vpc.aws_subnet.public[0]: Still creating... [00m10s elapsed]
+module.vpc.aws_subnet.public[1]: Creation complete after 10s [id=subnet-1c1d9ebd7f7d62d1b]
+module.vpc.aws_subnet.public[0]: Creation complete after 10s [id=subnet-999f48fd11e31d44c]
+module.vpc.aws_route_table_association.public[0]: Creating...
+module.vpc.aws_route_table_association.public[1]: Creating...
+module.vpc.aws_nat_gateway.this: Creating...
+module.eks.aws_eks_cluster.this: Creating...
+module.vpc.aws_route_table_association.public[0]: Creation complete after 0s [id=rtbassoc-4f60726e429cd32a8]
+module.vpc.aws_route_table_association.public[1]: Creation complete after 0s [id=rtbassoc-ac8f1bb8b9d48d106]
+module.vpc.aws_nat_gateway.this: Creation complete after 0s [id=nat-a12a3ac1b55e5ca7b]
+module.vpc.aws_route.private_nat: Creating...
+module.vpc.aws_route.private_nat: Creation complete after 0s [id=r-rtb-99389601675bb974a1080289494]
+module.eks.aws_eks_cluster.this: Creation complete after 1s [id=careslot-dev]
+module.eks.aws_eks_node_group.main: Creating...
+module.eks.aws_eks_node_group.main: Creation complete after 1s [id=careslot-dev:careslot-dev-main]
+
+Apply complete! Resources: 28 added, 0 changed, 0 destroyed.
+
+Outputs:
+
+cluster_endpoint = "https://2eWGLzkhQQt5QytQBuib.C37.ap-south-1.eks.amazonaws.com/"
+cluster_name = "careslot-dev"
+configure_kubectl = "aws eks update-kubeconfig --region ap-south-1 --name careslot-dev"
+node_group_name = "careslot-dev-main"
+private_subnet_ids = [
+  "subnet-e3611f9f42be86fd3",
+  "subnet-68cdfced04a4bf90d",
+]
+public_subnet_ids = [
+  "subnet-999f48fd11e31d44c",
+  "subnet-1c1d9ebd7f7d62d1b",
+]
+vpc_id = "vpc-825dffe7d58eea376"

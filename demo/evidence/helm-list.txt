@@ -1,0 +1,25 @@
+$ kubectl apply -f k8s/namespace.yaml -f k8s/resource-quota.yaml
+namespace/careslot unchanged
+resourcequota/careslot-quota unchanged
+limitrange/careslot-defaults unchanged
+
+$ helm list -A
+NAME                 	NAMESPACE       	REVISION	UPDATED                             	STATUS  	CHART                       	APP VERSION
+careslot-staging     	careslot-staging	1       	2026-10-16 15:11:47.522644 +0530 IST	deployed	careslot-1.0.0              	1.0.0      
+kube-prometheus-stack	monitoring      	1       	2026-10-16 14:47:24.007533 +0530 IST	deployed	kube-prometheus-stack-92.9.0	v0.94.1    
+
+$ helm status careslot-staging -n careslot-staging | head -6
+NAME: careslot-staging
+LAST DEPLOYED: Fri Oct 16 15:11:47 2026
+NAMESPACE: careslot-staging
+STATUS: deployed
+REVISION: 1
+DESCRIPTION: Install complete
+
+$ kubectl get pods -n careslot-staging
+NAME                                         READY   STATUS    RESTARTS   AGE
+careslot-staging-backend-7b5c7b57bd-qqqsf    1/1     Running   0          95s
+careslot-staging-backend-7b5c7b57bd-zrft5    1/1     Running   0          95s
+careslot-staging-frontend-5f7c6cf554-5hfbp   1/1     Running   0          95s
+careslot-staging-frontend-5f7c6cf554-87v2x   1/1     Running   0          95s
+careslot-staging-postgres-0                  1/1     Running   0          95s

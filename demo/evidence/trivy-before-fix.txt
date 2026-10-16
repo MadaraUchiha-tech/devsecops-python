@@ -1,0 +1,14 @@
+# Backend image as of commit 53cd57f (before the security fix) - FastAPI 0.118 / Starlette 0.48.0
+$ trivy image --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 careslot-backend:before-fix
+Total: 7 (HIGH: 7, CRITICAL: 0)
+┌──────────────────────┬─────────────────────┬──────────┬────────┬───────────────────┬───────────────┬──────────────────────────────────────────────────────────────┐
+│       Library        │    Vulnerability    │ Severity │ Status │ Installed Version │ Fixed Version │                            Title                             │
+│ msgpack              │ GHSA-6v7p-g79w-8964 │ HIGH     │ fixed  │ 1.1.2             │ 1.2.1         │ MessagePack for Python: Out-of-bounds read / crash on        │
+│ setuptools           │ CVE-2025-47273      │          │        │ 70.3.0            │ 78.1.1        │ setuptools: Path Traversal Vulnerability in setuptools       │
+│ starlette (METADATA) │ CVE-2025-62727      │          │        │ 0.48.0            │ 0.49.1        │ starlette: Starlette DoS via Range header merging            │
+│                      │ CVE-2026-48818      │          │        │                   │ 1.1.0         │ starlette: Starlette: SSRF and NTLM credential theft via UNC │
+│                      │ CVE-2026-54283      │          │        │                   │ 1.3.1         │ starlette: Starlette: request.form() limits silently ignored │
+│ urllib3              │ CVE-2026-97687      │          │        │ 2.7.0             │ 2.8.0         │ urllib3: urllib3: Traffic interception via HTTPS proxy TLS   │
+│                      │ CVE-2026-97689      │          │        │                   │               │ urllib3: urllib3: Denial of Service via unbounded memory     │
+└──────────────────────┴─────────────────────┴──────────┴────────┴───────────────────┴───────────────┴──────────────────────────────────────────────────────────────┘
+exit code: 1  -> pipeline stops, image is NOT pushed

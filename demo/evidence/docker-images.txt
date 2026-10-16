@@ -1,0 +1,7 @@
+$ docker images | grep careslot
+REPOSITORY                                    TAG                                        SIZE
+ghcr.io/madarauchiha-tech/careslot-backend    40060d80ba44dabcb8405dc1437c27ec197fc0a5   313MB
+careslot-backend                              local                                      345MB
+ghcr.io/madarauchiha-tech/careslot-backend    local                                      345MB
+ghcr.io/madarauchiha-tech/careslot-frontend   local                                      113MB
+careslot-frontend                             local                                      113MB

@@ -1,0 +1,29 @@
+# GitHub Actions run 38881684343 · job "Backend - lint + pytest"
+$ ruff check . && ruff format --check .
+All checks passed!
+19 files already formatted
+$ pytest -v --cov=app
+collecting ... collected 21 items
+tests/test_appointments.py::test_book_appointment PASSED                 [  4%]
+tests/test_appointments.py::test_get_and_list_appointments PASSED        [  9%]
+tests/test_appointments.py::test_double_booking_is_rejected PASSED       [ 14%]
+tests/test_appointments.py::test_cancelled_slot_can_be_rebooked PASSED   [ 19%]
+tests/test_appointments.py::test_status_workflow PASSED                  [ 23%]
+tests/test_appointments.py::test_reschedule_checks_conflicts PASSED      [ 28%]
+tests/test_appointments.py::test_booking_requires_existing_patient_and_active_doctor PASSED [ 33%]
+tests/test_appointments.py::test_delete_appointment PASSED               [ 38%]
+tests/test_appointments.py::test_stats PASSED                            [ 42%]
+tests/test_appointments.py::test_seed_demo_data_populates_empty_db PASSED [ 47%]
+tests/test_doctors_patients.py::test_create_and_list_doctors PASSED      [ 52%]
+tests/test_doctors_patients.py::test_update_doctor PASSED                [ 57%]
+tests/test_doctors_patients.py::test_delete_doctor_then_404 PASSED       [ 61%]
+tests/test_doctors_patients.py::test_doctor_validation_error PASSED      [ 66%]
+tests/test_doctors_patients.py::test_patient_crud_and_search PASSED      [ 71%]
+tests/test_doctors_patients.py::test_duplicate_patient_email_conflict PASSED [ 76%]
+tests/test_doctors_patients.py::test_invalid_patient_email_rejected PASSED [ 80%]
+tests/test_meta.py::test_health PASSED                                   [ 85%]
+tests/test_meta.py::test_ready_checks_database PASSED                    [ 90%]
+tests/test_meta.py::test_root_describes_service PASSED                   [ 95%]
+tests/test_meta.py::test_metrics_exposes_prometheus_format PASSED        [100%]
+TOTAL                           389     22    94%
+======================== 21 passed, 1 warning in 0.65s =========================

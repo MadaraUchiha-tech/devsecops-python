@@ -1,0 +1,5 @@
+$ kubectl get svc -n careslot
+NAME                TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
+careslot-backend    ClusterIP   10.106.228.64   <none>        8000/TCP   8m25s
+careslot-frontend   ClusterIP   10.108.58.151   <none>        80/TCP     8m25s
+careslot-postgres   ClusterIP   10.111.111.84   <none>        5432/TCP   8m25s
