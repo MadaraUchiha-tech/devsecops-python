@@ -1,0 +1,12 @@
+CareSlot {{ .Chart.AppVersion }} deployed as release "{{ .Release.Name }}" in namespace "{{ .Release.Namespace }}".
+
+  kubectl get pods,svc,ingress,hpa -n {{ .Release.Namespace }}
+{{- if .Values.ingress.enabled }}
+
+UI:   http://{{ .Values.ingress.host }}/
+API:  http://{{ .Values.ingress.host }}/api/appointments
+(point {{ .Values.ingress.host }} at your ingress controller's address in /etc/hosts)
+{{- end }}
+
+Without ingress:
+  kubectl port-forward -n {{ .Release.Namespace }} svc/{{ include "careslot.fullname" . }}-frontend 3000:80

@@ -1,0 +1,3 @@
+# minikube / kind: ingress-nginx addon, careslot.local in /etc/hosts
+ingress:
+  host: careslot.local

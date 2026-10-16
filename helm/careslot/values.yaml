@@ -1,0 +1,57 @@
+# Image tags are rewritten by CI to the Git commit SHA on every push to main (GitOps).
+backend:
+  image:
+    repository: ghcr.io/madarauchiha-tech/careslot-backend
+    tag: latest
+    pullPolicy: IfNotPresent
+  replicaCount: 2
+  seedDemoData: true
+  resources:
+    requests: {cpu: 100m, memory: 160Mi}
+    limits: {cpu: 500m, memory: 384Mi}
+
+frontend:
+  image:
+    repository: ghcr.io/madarauchiha-tech/careslot-frontend
+    tag: latest
+    pullPolicy: IfNotPresent
+  replicaCount: 2
+  resources:
+    requests: {cpu: 25m, memory: 32Mi}
+    limits: {cpu: 200m, memory: 128Mi}
+
+imagePullSecrets: []
+
+postgres:
+  enabled: true
+  image: postgres:16-alpine
+  database: careslot
+  username: careslot
+  # Demo default only. Override with --set postgres.password=... or an external secret in real environments.
+  password: careslot-dev-password
+  storage: 2Gi
+  resources:
+    requests: {cpu: 50m, memory: 128Mi}
+    limits: {cpu: 500m, memory: 512Mi}
+
+ingress:
+  enabled: true
+  className: nginx
+  host: careslot.local
+  annotations: {}
+  tls: []
+
+hpa:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 6
+  targetCPUUtilizationPercentage: 60
+
+monitoring:
+  serviceMonitor:
+    enabled: true
+    interval: 15s
+    # Must match the kube-prometheus-stack release name so Prometheus selects it.
+    releaseLabel: kube-prometheus-stack
+  grafanaDashboard:
+    enabled: true

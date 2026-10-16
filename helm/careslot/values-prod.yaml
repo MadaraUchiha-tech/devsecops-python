@@ -1,0 +1,13 @@
+# EKS: AWS Load Balancer Controller or ingress-nginx behind an NLB; Postgres should move to RDS.
+backend:
+  replicaCount: 3
+  seedDemoData: false
+frontend:
+  replicaCount: 3
+ingress:
+  host: careslot.example.com
+hpa:
+  minReplicas: 3
+  maxReplicas: 10
+postgres:
+  storage: 20Gi

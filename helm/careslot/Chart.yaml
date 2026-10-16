@@ -1,0 +1,9 @@
+apiVersion: v2
+name: careslot
+description: CareSlot clinic appointment scheduler - React frontend, FastAPI backend, PostgreSQL
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+keywords: [fastapi, react, postgresql, clinic]
+maintainers:
+  - name: MadaraUchiha-tech
