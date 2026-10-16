@@ -1,8 +1,8 @@
-"""Demo data for a fresh database. Only runs when SEED_DEMO_DATA=true and the tables are empty."""
+"""Demo data for a fresh database. Run as `python -m app.seed` after migrations when SEED_DEMO_DATA=true."""
 
 from datetime import UTC, date, datetime, time, timedelta
 
-from sqlalchemy import func, select
+from sqlalchemy import func, select, text
 from sqlalchemy.orm import Session
 
 from .models import Appointment, Doctor, Patient
@@ -36,6 +36,9 @@ APPOINTMENTS = [
 
 
 def seed_demo_data(db: Session) -> bool:
+    if db.get_bind().dialect.name == "postgresql":
+        # Serialise concurrent replicas; released when this transaction ends.
+        db.execute(text("SELECT pg_advisory_xact_lock(424243)"))
     if db.scalar(select(func.count(Doctor.id))):
         return False
     doctors = [Doctor(full_name=n, specialty=s, room=r) for n, s, r in DOCTORS]
@@ -52,3 +55,17 @@ def seed_demo_data(db: Session) -> bool:
         )
     db.commit()
     return True
+
+
+if __name__ == "__main__":
+    import logging
+
+    from .config import settings
+    from .db import SessionLocal
+
+    logging.basicConfig(level=logging.INFO)
+    if settings.seed_demo_data:
+        with SessionLocal() as session:
+            seeded = seed_demo_data(session)
+            session.commit()
+        logging.getLogger("careslot.seed").info("demo data %s", "seeded" if seeded else "already present")

@@ -1,5 +1,4 @@
 import logging
-from contextlib import asynccontextmanager
 
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -9,29 +8,17 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from .config import settings
-from .db import SessionLocal, get_db
+from .db import get_db
 from .routers import appointments, doctors, patients
-from .seed import seed_demo_data
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")
-log = logging.getLogger("careslot")
 
 
-@asynccontextmanager
-async def lifespan(_: FastAPI):
-    # Schema is owned by Alembic (run before Uvicorn in the container); here we only seed.
-    if settings.seed_demo_data:
-        with SessionLocal() as db:
-            if seed_demo_data(db):
-                log.info("Seeded demo doctors, patients and appointments")
-    yield
-
-
+# Schema is owned by Alembic and demo data by `python -m app.seed`; both run before Uvicorn.
 app = FastAPI(
     title=settings.app_name,
     version=settings.app_version,
     description="Clinic appointment scheduling API: doctors, patients and appointments.",
-    lifespan=lifespan,
 )
 app.add_middleware(CORSMiddleware, allow_origins=settings.cors_origins, allow_methods=["*"], allow_headers=["*"])
 Instrumentator(excluded_handlers=["/metrics", "/health", "/ready"]).instrument(app).expose(
