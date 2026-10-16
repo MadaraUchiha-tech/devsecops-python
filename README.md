@@ -427,7 +427,7 @@ Every requirement from [GRADING.md](GRADING.md), with the evidence inline. Scree
 
 <img src="demo/screenshots/01-app-schedule-ingress.png" alt="Schedule view" width="49%"> <img src="demo/screenshots/02-app-double-booking-409.png" alt="Double booking rejected with 409" width="49%">
 <img src="demo/screenshots/03-app-patients.png" alt="Patients" width="49%"> <img src="demo/screenshots/04-app-doctors.png" alt="Doctors" width="49%">
-<img src="demo/screenshots/06-swagger-docs.png" alt="Swagger API docs" width="49%"> <img src="demo/screenshots/05-app-mobile.png" alt="Mobile layout" width="49%">
+<img src="demo/screenshots/06-swagger-docs.png" alt="Swagger API docs" width="72%" valign="top"> <img src="demo/screenshots/05-app-mobile.png" alt="Mobile layout" width="24%" valign="top">
 
 ### M2 Testing
 
