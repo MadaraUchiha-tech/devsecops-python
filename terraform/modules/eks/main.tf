@@ -40,6 +40,18 @@ resource "aws_cloudwatch_log_group" "cluster" {
   retention_in_days = 7
 }
 
+# Envelope-encrypt Kubernetes Secrets in etcd with a customer-managed key.
+resource "aws_kms_key" "eks" {
+  description             = "${var.cluster_name} EKS secrets encryption"
+  deletion_window_in_days = 7
+  enable_key_rotation     = true
+}
+
+resource "aws_kms_alias" "eks" {
+  name          = "alias/${var.cluster_name}-eks"
+  target_key_id = aws_kms_key.eks.key_id
+}
+
 resource "aws_eks_cluster" "this" {
   name     = var.cluster_name
   version  = var.kubernetes_version
@@ -53,6 +65,13 @@ resource "aws_eks_cluster" "this" {
     endpoint_private_access = true
     endpoint_public_access  = true
     public_access_cidrs     = var.public_access_cidrs
+  }
+
+  encryption_config {
+    resources = ["secrets"]
+    provider {
+      key_arn = aws_kms_key.eks.arn
+    }
   }
 
   access_config {
