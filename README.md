@@ -9,6 +9,7 @@ The app is small on purpose. The capstone is about the path it takes from a lapt
 | **Repository** | https://github.com/MadaraUchiha-tech/devsecops-python |
 | **Images** | `ghcr.io/madarauchiha-tech/careslot-backend:<git-sha>`, `ghcr.io/madarauchiha-tech/careslot-frontend:<git-sha>` |
 | **Demo material** | [`demo/`](demo/): slides, video, screenshots, terminal evidence |
+| **Grading evidence** | [Section 14](#14-grading-evidence): every GRADING.md requirement with its screenshot and file links |
 
 ---
 
@@ -392,3 +393,147 @@ helm upgrade --install kube-prometheus-stack prometheus-community/kube-prometheu
 - **Times are stored in UTC** and shown in the browser's time zone. The schedule's day view uses UTC day boundaries.
 - **GHCR visibility.** Packages published from Actions may start out private. Make them public (package settings), or give the cluster an `imagePullSecret`, which the CI smoke test does.
 - Single NAT gateway and a public EKS endpoint keep costs down. Production would use one NAT per AZ and a restricted or private endpoint.
+
+---
+
+## 14. Grading evidence
+
+Every requirement from [GRADING.md](GRADING.md), with the evidence inline. Screenshot files are in [`demo/screenshots/`](demo/screenshots/), raw terminal output in [`demo/evidence/`](demo/evidence/).
+
+| Module | Requirement → where it is | Status |
+|---|---|---|
+| [M1 Application](#m1-application) | 16 REST endpoints, Postgres, Alembic migration, React UI | ✅ |
+| [M2 Testing](#m2-testing) | 21 pytest tests, 94% coverage, SQLite test DB, Ruff | ✅ |
+| [M3 Git](#m3-git-and-github) | 40+ commits, conventional messages | ✅ |
+| [M4 Docker](#m4-docker) | Multi-stage, non-root, `docker compose up --build`, app on :3000 | ✅ |
+| [M5 CI/CD](#m5-cicd) | Green run, GHCR images tagged with the commit SHA | ✅ |
+| [M6 DevSecOps](#m6-devsecops-trivy) | Trivy gate on both images, a real CVE found and fixed | ✅ |
+| [M7 Terraform](#m7-terraform) | VPC + EKS modules, plan / apply / destroy, tfvars example | ✅ |
+| [M8 Kubernetes + Helm](#m8-kubernetes-and-helm) | Pods Running, Services, Ingress, `helm list`, HPA, Argo CD | ✅ |
+| [M9 Observability](#m9-observability) | `/metrics`, Prometheus targets UP, Grafana dashboard | ✅ |
+| [M10 Presentation](#m10-presentation-and-documentation) | Video, slide deck, this README | ✅ |
+
+### M1 Application
+
+| Required | Where |
+|---|---|
+| Backend source (models, schemas, routes, DB config) | [`backend/app/`](backend/app/): [`models.py`](backend/app/models.py), [`schemas.py`](backend/app/schemas.py), [`routers/`](backend/app/routers/), [`db.py`](backend/app/db.py), [`config.py`](backend/app/config.py) |
+| At least 4 REST endpoints | 16 under `/api`, listed in [section 3](#rest-api) |
+| Alembic migration | [`backend/alembic/versions/0001_create_clinic_schema.py`](backend/alembic/versions/0001_create_clinic_schema.py) |
+| `requirements.txt` | [`backend/requirements.txt`](backend/requirements.txt) |
+| Frontend source | [`frontend/src/`](frontend/src/) |
+| `docker-compose.yml` | [`docker-compose.yml`](docker-compose.yml) |
+| App running in the browser | Screenshots below; also the video [`demo/careslot-presentation.mp4`](demo/careslot-presentation.mp4) |
+
+<img src="demo/screenshots/01-app-schedule-ingress.png" alt="Schedule view" width="49%"> <img src="demo/screenshots/02-app-double-booking-409.png" alt="Double booking rejected with 409" width="49%">
+<img src="demo/screenshots/03-app-patients.png" alt="Patients" width="49%"> <img src="demo/screenshots/04-app-doctors.png" alt="Doctors" width="49%">
+<img src="demo/screenshots/06-swagger-docs.png" alt="Swagger API docs" width="49%"> <img src="demo/screenshots/05-app-mobile.png" alt="Mobile layout" width="49%">
+
+### M2 Testing
+
+| Required | Where |
+|---|---|
+| Test files | [`backend/tests/`](backend/tests/): `test_appointments.py` (10), `test_doctors_patients.py` (7), `test_meta.py` (4) |
+| `pytest.ini` / `conftest.py` | [`backend/pytest.ini`](backend/pytest.ini), [`backend/tests/conftest.py`](backend/tests/conftest.py) |
+| Test DB, not production | `conftest.py` overrides `get_db` with in-memory SQLite (`StaticPool`); Postgres is never touched |
+| `pytest -v` passing | Screenshot below · raw: [`demo/evidence/pytest-ci.txt`](demo/evidence/pytest-ci.txt) |
+
+![pytest -v: 21 passed, 94% coverage](demo/screenshots/40-pytest-passing.png)
+
+### M3 Git and GitHub
+
+| Required | Where |
+|---|---|
+| Repository URL | https://github.com/MadaraUchiha-tech/devsecops-python |
+| 10+ commits | [Commit history](https://github.com/MadaraUchiha-tech/devsecops-python/commits/main): 40+ commits, conventional `feat/fix/ci/docs` messages |
+
+<img src="demo/screenshots/13-commit-history.png" alt="GitHub commit history" width="49%"> <img src="demo/screenshots/80-git-log.png" alt="git log --oneline" width="49%">
+
+### M4 Docker
+
+| Required | Where |
+|---|---|
+| `backend/Dockerfile` | [`backend/Dockerfile`](backend/Dockerfile): multi-stage, runs as uid 10001, pip/setuptools stripped |
+| `frontend/Dockerfile` | [`frontend/Dockerfile`](frontend/Dockerfile): multi-stage (Node build → nginx-unprivileged), runs as uid 101 |
+| `docker-compose.yml` | [`docker-compose.yml`](docker-compose.yml): Postgres + backend + frontend with healthchecks |
+| `docker compose up --build` output | Screenshot below · raw: [`demo/evidence/docker-compose-up.txt`](demo/evidence/docker-compose-up.txt) |
+| Browser at `http://localhost:3000` | Screenshot below |
+
+<img src="demo/screenshots/41-docker-compose-up.png" alt="docker compose up --build" width="49%"> <img src="demo/screenshots/07-app-localhost-3000.png" alt="App at localhost:3000" width="49%">
+![Images and non-root users](demo/screenshots/42-docker-images.png)
+
+### M5 CI/CD
+
+| Required | Where |
+|---|---|
+| Workflow YAML | [`.github/workflows/ci-cd.yml`](.github/workflows/ci-cd.yml) |
+| Green pipeline run URL | https://github.com/MadaraUchiha-tech/devsecops-python/actions/runs/38923171625 (all 8 jobs green) · [all runs](https://github.com/MadaraUchiha-tech/devsecops-python/actions) |
+| GHCR images with SHA tags | [careslot-backend](https://github.com/users/MadaraUchiha-tech/packages/container/package/careslot-backend) · [careslot-frontend](https://github.com/users/MadaraUchiha-tech/packages/container/package/careslot-frontend) |
+
+Pipeline: lint + pytest, frontend build, `terraform validate` + `helm lint`, secret scan → build both images → Trivy gate → push to GHCR as `:<commit-sha>` → Helm install on a kind cluster + API smoke test → CI writes the SHA into `helm/careslot/values.yaml` for Argo CD. Details in [section 7](#7-cicd-pipeline).
+
+<img src="demo/screenshots/10-github-actions-run.png" alt="Green pipeline run" width="49%"> <img src="demo/screenshots/11-github-actions-history.png" alt="Actions history" width="49%">
+<img src="demo/screenshots/12-ghcr-backend.png" alt="GHCR backend with SHA tags" width="49%"> <img src="demo/screenshots/12-ghcr-frontend.png" alt="GHCR frontend with SHA tags" width="49%">
+
+### M6 DevSecOps Trivy
+
+| Required | Where |
+|---|---|
+| Trivy step in the workflow | [`ci-cd.yml`](.github/workflows/ci-cd.yml), job `build-scan-push`, step "Trivy scan - fail on fixable HIGH/CRITICAL CVEs" (both images, matrix) |
+| Fails on HIGH/CRITICAL | `trivy image --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1` |
+| Scan output screenshot | Below · raw: [`trivy-before-fix.txt`](demo/evidence/trivy-before-fix.txt), [`trivy-ci-backend.txt`](demo/evidence/trivy-ci-backend.txt), [`trivy-ci-frontend.txt`](demo/evidence/trivy-ci-frontend.txt) |
+| No secrets committed | `trivy fs --scanners secret --exit-code 1` runs on every push; `terraform.tfvars` is git-ignored |
+
+**What Trivy scanned and what the result means.** Trivy scanned both images in CI: the Debian OS packages and every Python package in the backend, and the Alpine packages in the Nginx frontend. The first backend build failed on 7 HIGH findings, including **CVE-2025-62727**, a denial of service in Starlette 0.48.0 where many overlapping HTTP `Range` headers cost quadratic CPU time. After upgrading FastAPI/Starlette and removing pip/setuptools from the runtime image, both images report **0** fixable HIGH/CRITICAL vulnerabilities, so CI pushes them to GHCR.
+
+![Trivy blocking the pre-fix image](demo/screenshots/43-trivy-cve-found.png)
+<img src="demo/screenshots/45-trivy-ci-backend-clean.png" alt="Trivy CI backend clean" width="49%"> <img src="demo/screenshots/44-trivy-ci-frontend-clean.png" alt="Trivy CI frontend clean" width="49%">
+
+### M7 Terraform
+
+| Required | Where |
+|---|---|
+| `.tf` files | [`terraform/`](terraform/): [`main.tf`](terraform/main.tf), [`variables.tf`](terraform/variables.tf), [`outputs.tf`](terraform/outputs.tf), [`versions.tf`](terraform/versions.tf), [`modules/vpc`](terraform/modules/vpc/), [`modules/eks`](terraform/modules/eks/) |
+| VPC with 2+ public subnets | `10.20.0.0/16`, 2 public + 2 private subnets in `ap-south-1a/b`, IGW, NAT ([section 9](#9-terraform-aws-infrastructure)) |
+| EKS + worker node group | `careslot-dev`, Kubernetes 1.33, node group `careslot-dev-main` (t3.medium × 2) |
+| `terraform.tfvars.example` | [`terraform/terraform.tfvars.example`](terraform/terraform.tfvars.example) (no credentials) |
+| `plan` / resources / `destroy` | Screenshots below · raw: [`terraform-plan.txt`](demo/evidence/terraform-plan.txt), [`terraform-apply.txt`](demo/evidence/terraform-apply.txt), [`aws-resources-mock.txt`](demo/evidence/aws-resources-mock.txt), [`terraform-destroy.txt`](demo/evidence/terraform-destroy.txt) |
+
+<img src="demo/screenshots/50-terraform-plan.png" alt="terraform plan: 28 to add" width="49%"> <img src="demo/screenshots/51b-terraform-apply.png" alt="terraform apply" width="49%">
+<img src="demo/screenshots/51-aws-vpc-eks-resources.png" alt="VPC, subnets, EKS cluster and node group" width="49%"> <img src="demo/screenshots/52-terraform-destroy.png" alt="terraform destroy: 28 destroyed" width="49%">
+
+### M8 Kubernetes and Helm
+
+| Required | Where |
+|---|---|
+| `k8s/` manifests | [`k8s/namespace.yaml`](k8s/namespace.yaml) (Pod Security labels), [`k8s/resource-quota.yaml`](k8s/resource-quota.yaml) |
+| Helm chart | [`helm/careslot/`](helm/careslot/): `Chart.yaml`, `values.yaml`, [`templates/`](helm/careslot/templates/) |
+| 2+ replicas, ClusterIP Services, Ingress `/` and `/api` | [`backend.yaml`](helm/careslot/templates/backend.yaml), [`frontend.yaml`](helm/careslot/templates/frontend.yaml), [`ingress.yaml`](helm/careslot/templates/ingress.yaml) |
+| Screenshots | `kubectl get pods`, `kubectl get svc`, Ingress + HPA, `helm list` below; app through the Ingress at `careslot.local` is the first M1 screenshot |
+| GitOps | [`argocd/careslot-application.yaml`](argocd/careslot-application.yaml): auto-sync, prune, self-heal |
+
+<img src="demo/screenshots/60-kubectl-get-pods.png" alt="kubectl get pods" width="49%"> <img src="demo/screenshots/61-kubectl-get-svc.png" alt="kubectl get svc" width="49%">
+<img src="demo/screenshots/62-kubectl-ingress-hpa.png" alt="Ingress and HPA" width="49%"> <img src="demo/screenshots/63-helm-list.png" alt="helm list" width="49%">
+<img src="demo/screenshots/64-hpa-scaling.png" alt="HPA scaling 2 to 6" width="49%"> <img src="demo/screenshots/66-argocd-self-heal.png" alt="Argo CD self-heal" width="49%">
+<img src="demo/screenshots/30-argocd-applications.png" alt="Argo CD applications" width="49%"> <img src="demo/screenshots/31-argocd-careslot-tree.png" alt="Argo CD resource tree" width="49%">
+
+### M9 Observability
+
+| Required | Where |
+|---|---|
+| `monitoring/` values files | [`monitoring/prometheus-values.yaml`](monitoring/prometheus-values.yaml), [`monitoring/grafana-values.yaml`](monitoring/grafana-values.yaml) |
+| Scrape config + dashboard | [`servicemonitor.yaml`](helm/careslot/templates/servicemonitor.yaml), [`grafana-dashboard.yaml`](helm/careslot/templates/grafana-dashboard.yaml) |
+| `curl /metrics` | Screenshot below · raw: [`demo/evidence/metrics-curl.txt`](demo/evidence/metrics-curl.txt) |
+| Prometheus Targets UP | Screenshot below |
+| Grafana dashboard | Screenshot below |
+
+<img src="demo/screenshots/70-metrics-endpoint.png" alt="curl /metrics" width="49%"> <img src="demo/screenshots/20-prometheus-targets-up.png" alt="Prometheus targets UP" width="49%">
+<img src="demo/screenshots/21-prometheus-query.png" alt="Prometheus query" width="49%"> <img src="demo/screenshots/22-grafana-dashboard.png" alt="Grafana dashboard" width="49%">
+
+### M10 Presentation and documentation
+
+| Required | Where |
+|---|---|
+| Video (MANDATORY) | [`demo/careslot-presentation.mp4`](demo/careslot-presentation.mp4): live walkthrough of the app, CI/CD run, Trivy, Terraform, Argo CD, Kubernetes, Prometheus and Grafana. Chapter times are in [`demo/README.md`](demo/README.md#video-chapters) |
+| Slide deck (MANDATORY) | [`demo/CareSlot-presentation.pptx`](demo/CareSlot-presentation.pptx) · [`demo/CareSlot-presentation.pdf`](demo/CareSlot-presentation.pdf) (13 slides) |
+| README sections | Description (top), [architecture](#1-architecture), [tech stack](#2-tech-stack), [local setup](#4-run-it-locally), [CI/CD](#7-cicd-pipeline), [Terraform](#9-terraform-aws-infrastructure), [Kubernetes/Helm](#10-kubernetes-and-helm), [observability](#11-observability), [known issues](#13-known-issues-and-limitations) |

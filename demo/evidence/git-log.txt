@@ -1,22 +1,32 @@
 $ git log --oneline
-4450625 chore(gitops): deploy a4a589b to careslot [skip ci]
-a4a589b fix(gitops): stop Argo CD reporting StatefulSet volumeClaimTemplates drift
-aec8350 chore(gitops): deploy 40060d8 to careslot [skip ci]
-40060d8 docs: full technical README for CareSlot and a concurrent HPA load test
-a51097d ci: fix advisory IaC scan (single target) and move to checkout@v5
-9aa519d ci: test -> build -> Trivy -> GHCR -> kind smoke test -> GitOps promote
-8efde9b fix(helm): read-only root filesystem for Postgres (Trivy KSV-0014)
-2fc2724 feat(terraform): encrypt EKS secrets with a rotating KMS key
-fe7b358 fix(backend): serialise migrations and seeding across replicas
-fc6f795 docs(troubleshooting): CareSlot break/fix labs and table of starter-project bugs
-43b64a5 feat(k8s): namespace with pod security, quotas, monitoring values, Argo CD app
-be80fa1 feat(helm): careslot chart with ingress, HPA, ServiceMonitor and dashboard
-ab21445 feat(terraform): VPC and EKS as reusable modules with mock-AWS runner
-4187dde fix(security): upgrade FastAPI/Starlette and strip pip from runtime image
-53cd57f build(docker): non-root Nginx runtime and healthchecked compose stack
-12b4164 feat(frontend): CareSlot front-desk UI for schedule, patients and doctors
-8b2304a feat(backend): replace task API with CareSlot clinic scheduling API
-ce26962 chore: tighten .gitignore and remove duplicate root workflow file
+c6dc4ec docs: tidy Terraform wording in README, demo notes and slides
+c11f1cc docs(demo): trim video to the silent live walkthrough, starting at the app
+8bebf7e chore(gitops): deploy 4002aec to careslot [skip ci]
+4002aec docs(demo): narrated presentation video with captions and chapters
+b7395c3 chore(gitops): deploy 6a2d012 to careslot [skip ci]
+89562ba feat(frontend): show release label in sidebar
+67af367 chore(gitops): deploy abb08c8 to careslot [skip ci]
+f269805 docs(demo): screenshots, raw screen recordings and terminal evidence
+559706b docs(demo): slide deck, video script and grading checklist
+8c0b4d3 ci: skip the pipeline for docs-only and demo-only pushes
+4c45eb2 chore(gitops): deploy a4a589b to careslot [skip ci]
+0832dd9 fix(gitops): stop Argo CD reporting StatefulSet volumeClaimTemplates drift
+cc48b82 chore(gitops): deploy 40060d8 to careslot [skip ci]
+ee5b7ae docs: full technical README for CareSlot and a concurrent HPA load test
+daf3d90 ci: fix advisory IaC scan (single target) and move to checkout@v5
+75541bd ci: test -> build -> Trivy -> GHCR -> kind smoke test -> GitOps promote
+4b1e5e3 fix(helm): read-only root filesystem for Postgres (Trivy KSV-0014)
+1933c3c feat(terraform): encrypt EKS secrets with a rotating KMS key
+05f9463 fix(backend): serialise migrations and seeding across replicas
+6e9400e docs(troubleshooting): CareSlot break/fix labs and table of starter-project bugs
+175c588 feat(k8s): namespace with pod security, quotas, monitoring values, Argo CD app
+6c00714 feat(helm): careslot chart with ingress, HPA, ServiceMonitor and dashboard
+5dd9fbf feat(terraform): VPC and EKS as reusable modules with mock-AWS runner
+f873c29 fix(security): upgrade FastAPI/Starlette and strip pip from runtime image
+6d3f63f build(docker): non-root Nginx runtime and healthchecked compose stack
+4878180 feat(frontend): CareSlot front-desk UI for schedule, patients and doctors
+75ae72d feat(backend): replace task API with CareSlot clinic scheduling API
+1bc38ab chore: tighten .gitignore and remove duplicate root workflow file
 bab00cc submission.md added
 0bb8040 submission.md added
 0b52425 cicd updated

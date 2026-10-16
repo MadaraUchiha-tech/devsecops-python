@@ -40,13 +40,15 @@ Silent screen recording of the running system, captured on 16 Oct 2026. Each sec
 
 ## Screenshots → grading checklist
 
+The same checklist, with every screenshot shown inline and links to the files, is in the root README: [section 14, Grading evidence](../README.md#14-grading-evidence).
+
 | Requirement | Screenshot |
 |---|---|
 | App running in the browser (M1, M4) | `01-app-schedule-ingress.png`, `02-app-double-booking-409.png`, `03-app-patients.png`, `04-app-doctors.png`, `05-app-mobile.png` |
 | Swagger / API | `06-swagger-docs.png` |
 | `pytest -v` passing (M2) | `40-pytest-passing.png` |
 | Commit history, 10+ commits (M3) | `13-commit-history.png`, `80-git-log.png` |
-| `docker compose up --build`, non-root (M4) | `41-docker-compose-up.png`, `42-docker-images.png` |
+| `docker compose up --build`, non-root, app on `localhost:3000` (M4) | `41-docker-compose-up.png`, `42-docker-images.png`, `07-app-localhost-3000.png` |
 | Green GitHub Actions run (M5) | `10-github-actions-run.png`, `11-github-actions-history.png` |
 | GHCR images with SHA tags (M5) | `12-ghcr-backend.png`, `12-ghcr-frontend.png` |
 | Trivy output (M6) | `43-trivy-cve-found.png` (before fix, pipeline blocked), `44-…`/`45-trivy-ci-*-clean.png` (CI gate, clean) |
