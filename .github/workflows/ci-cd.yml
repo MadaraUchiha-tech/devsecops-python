@@ -1,183 +1,239 @@
-name: TaskBoard Python CI/CD
+name: CareSlot CI/CD
 
 on:
   push:
-    branches: main
+    branches: [main]
   pull_request:
-    branches: main
+    branches: [main]
+  workflow_dispatch:
 
-# ========================================
-# STEP 1 — Test
-# ========================================
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  REGISTRY: ghcr.io
+  # GHCR paths must be lowercase; the owner "MadaraUchiha-tech" is not.
+  IMAGE_PREFIX: ghcr.io/madarauchiha-tech/careslot
+  TRIVY_VERSION: v0.75.0
+
+permissions:
+  contents: read
+
 jobs:
-  test:
-    name: Test - Backend & Frontend
+  # ───────────────────────── 1. QUALITY GATES ─────────────────────────
+  backend-test:
+    name: Backend - lint + pytest
+    runs-on: ubuntu-latest
+    defaults:
+      run: {working-directory: backend}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: backend/requirements*.txt
+      - run: pip install -r requirements-dev.txt
+      - name: Ruff lint
+        run: ruff check .
+      - name: Ruff format check
+        run: ruff format --check .
+      - name: Pytest (SQLite test DB, fails the build on any failure)
+        run: pytest -v --cov=app --cov-report=term --cov-report=xml --junitxml=pytest-report.xml
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: backend-test-reports
+          path: |
+            backend/pytest-report.xml
+            backend/coverage.xml
+
+  frontend-build:
+    name: Frontend - build
+    runs-on: ubuntu-latest
+    defaults:
+      run: {working-directory: frontend}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - run: npm run build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: frontend/dist
+
+  iac-validate:
+    name: IaC - terraform validate + helm lint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with: {terraform_version: 1.13.4}
+      - name: terraform fmt
+        run: terraform -chdir=terraform fmt -check -recursive
+      - name: terraform validate
+        run: |
+          terraform -chdir=terraform init -backend=false -input=false
+          terraform -chdir=terraform validate
+      - uses: azure/setup-helm@v4
+        with: {version: v3.19.0}
+      - name: helm lint + render
+        run: |
+          helm lint helm/careslot -f helm/careslot/values-local.yaml
+          helm template careslot helm/careslot -n careslot > /dev/null
 
-      - uses: actions/setup-python@v5
-        with: {python-version: '3.12'}
-
-      - name: Install backend dependencies
-        run: pip install -r requirements.txt
-        working-directory: backend
-
-      - name: Run backend tests
-        run: pytest -q
-        working-directory: backend
-
-      - uses: actions/setup-node@v4
-        with: {node-version: '22'}
-
-      - name: Build frontend
-        run: npm install && npm run build
-        working-directory: frontend
-
-  # ========================================
-  # STEP 2 — Build Docker Images
-  # ========================================
-  docker-build:
-    name: Docker Build
-    needs: test
+  security-scan:
+    name: Security - secrets + IaC misconfig (Trivy fs)
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+      - name: Install Trivy
+        run: curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sudo sh -s -- -b /usr/local/bin ${TRIVY_VERSION}
+      - name: Secret scan (blocking)
+        run: trivy fs --scanners secret --exit-code 1 --no-progress .
+      - name: Terraform / Helm / Dockerfile misconfiguration report (advisory)
+        run: trivy fs --scanners misconfig --severity HIGH,CRITICAL --exit-code 0 --no-progress terraform helm backend frontend
 
-      - name: Build backend image
-        run: |
-          docker build -t nensiravaliya28/taskboard-backend:${{ github.sha }} ./backend
-
-      - name: Build frontend image
-        run: |
-          docker build -t nensiravaliya28/taskboard-frontend:${{ github.sha }} ./frontend
-
-  # ========================================
-  # STEP 3 — Scan Docker Images with Trivy
-  # ========================================
-  image-scan:
-    name: Image Scan - Trivy
-    needs: docker-build
+  # ─────────────── 2. BUILD → TRIVY IMAGE SCAN → PUSH TO GHCR ───────────────
+  build-scan-push:
+    name: Image - ${{ matrix.component }}
+    needs: [backend-test, frontend-build, iac-validate, security-scan]
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        component: [backend, frontend]
+    env:
+      IMAGE: ghcr.io/madarauchiha-tech/careslot-${{ matrix.component }}:${{ github.sha }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
 
-      - name: Rebuild backend image for scan
-        run: |
-          docker build -t nensiravaliya28/taskboard-backend:${{ github.sha }} ./backend
-
-      - name: Rebuild frontend image for scan
-        run: |
-          docker build -t nensiravaliya28/taskboard-frontend:${{ github.sha }} ./frontend
+      - name: Build image (tag = commit SHA)
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.component }}
+          load: true
+          tags: ${{ env.IMAGE }}
+          cache-from: type=gha,scope=${{ matrix.component }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.component }}
+          labels: |
+            org.opencontainers.image.revision=${{ github.sha }}
 
       - name: Install Trivy
+        run: curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sudo sh -s -- -b /usr/local/bin ${TRIVY_VERSION}
+
+      - name: Trivy scan - fail on fixable HIGH/CRITICAL CVEs
         run: |
-          sudo apt-get install -y wget
-          wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key \
-            | sudo gpg --dearmor -o /usr/share/keyrings/trivy.gpg
-          echo "deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb generic main" \
-            | sudo tee /etc/apt/sources.list.d/trivy.list
-          sudo apt-get update && sudo apt-get install -y trivy
+          trivy image --no-progress --severity HIGH,CRITICAL --ignore-unfixed \
+            --exit-code 1 --format table "$IMAGE"
 
-      - name: Scan backend image
+      - name: Trivy SARIF report (GitHub Security tab)
+        if: always()
         run: |
-          trivy image --severity HIGH,CRITICAL --ignore-unfixed \
-            nensiravaliya28/taskboard-backend:${{ github.sha }}
+          trivy image --no-progress --severity MEDIUM,HIGH,CRITICAL --format sarif \
+            --output trivy-${{ matrix.component }}.sarif "$IMAGE"
 
-      - name: Scan frontend image
-        run: |
-          trivy image --severity HIGH,CRITICAL --ignore-unfixed \
-            nensiravaliya28/taskboard-frontend:${{ github.sha }}
+      - name: Upload SARIF
+        if: always() && github.event_name == 'push'
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-${{ matrix.component }}.sarif
+          category: trivy-${{ matrix.component }}
 
-  # ========================================
-  # STEP 4 — Push Images to Docker Hub
-  # ========================================
-  push:
-    name: Push Images to Docker Hub
-    needs: image-scan
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Login to Docker Hub
+      - name: Log in to GHCR
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: docker/login-action@v3
         with:
-          username: nensiravaliya28
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and tag backend image
-        run: |
-          docker build \
-            -t nensiravaliya28/taskboard-backend:${{ github.sha }} \
-            -t nensiravaliya28/taskboard-backend:latest \
-            ./backend
+      - name: Push image (only scanned images reach the registry)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: docker push "$IMAGE"
 
-      - name: Build and tag frontend image
-        run: |
-          docker build \
-            -t nensiravaliya28/taskboard-frontend:${{ github.sha }} \
-            -t nensiravaliya28/taskboard-frontend:latest \
-            ./frontend
-
-      - name: Push backend image
-        run: |
-          docker push nensiravaliya28/taskboard-backend:${{ github.sha }}
-          docker push nensiravaliya28/taskboard-backend:latest
-
-      - name: Push frontend image
-        run: |
-          docker push nensiravaliya28/taskboard-frontend:${{ github.sha }}
-          docker push nensiravaliya28/taskboard-frontend:latest
-
-  # ========================================
-  # STEP 5 — Deploy to Kubernetes
-  #          (only runs on push to main)
-  # ========================================
-  deploy:
-    name: Deploy to Kubernetes
-    needs: push
+  # ─────────────── 3. DEPLOY SMOKE TEST ON AN EPHEMERAL CLUSTER ───────────────
+  deploy-smoke-test:
+    name: Deploy - Helm on kind + API smoke test
+    needs: build-scan-push
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-
-    # Skip this step on pull requests — only deploy real merges to main
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-
+    permissions:
+      contents: read
+      packages: read
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+      - uses: helm/kind-action@v1
+        with: {cluster_name: careslot-ci}
+      - uses: azure/setup-helm@v4
+        with: {version: v3.19.0}
 
-      - name: Create k8s Kind Cluster
-        uses: helm/kind-action@v1.10.0
-
-      - name: Create namespace
-        run: kubectl apply -f k8s/namespace.yaml
-
-      - name: Update deployment with new image tag
+      - name: Namespace + GHCR pull secret
         run: |
-          sed -i "s|__IMAGE_TAG__|${{ github.sha }}|g" k8s/deployment.yaml
+          kubectl apply -f k8s/namespace.yaml
+          kubectl create secret docker-registry ghcr-pull -n careslot \
+            --docker-server=ghcr.io --docker-username=${{ github.actor }} \
+            --docker-password=${{ secrets.GITHUB_TOKEN }}
 
-      - name: Deploy to Kubernetes
+      - name: helm upgrade --install (images tagged with this commit)
         run: |
-          kubectl apply -f k8s/deployment.yaml
-          kubectl apply -f k8s/service.yaml
+          helm upgrade --install careslot helm/careslot -n careslot \
+            --set backend.image.tag=${{ github.sha }} \
+            --set frontend.image.tag=${{ github.sha }} \
+            --set imagePullSecrets[0].name=ghcr-pull \
+            --set ingress.enabled=false \
+            --wait --timeout 6m
+          kubectl get pods,svc -n careslot
 
-      - name: Wait for backend pod to be ready
+      - name: Smoke test the API through the frontend Service
         run: |
-          kubectl wait --for=condition=ready pod \
-            -l app=taskboard-backend \
-            -n taskboard \
-            --timeout=120s
+          kubectl port-forward -n careslot svc/careslot-frontend 8080:80 &
+          for i in $(seq 1 20); do curl -sf localhost:8080/api/doctors >/dev/null && break; sleep 2; done
+          curl -sf localhost:8080/api/appointments/stats | tee stats.json
+          DOCTOR=$(curl -sf localhost:8080/api/doctors | jq '.[0].id')
+          PATIENT=$(curl -sf localhost:8080/api/patients | jq '.[0].id')
+          curl -sf -X POST localhost:8080/api/appointments -H 'Content-Type: application/json' \
+            -d "{\"patient_id\":$PATIENT,\"doctor_id\":$DOCTOR,\"scheduled_at\":\"2031-01-01T09:00:00Z\",\"reason\":\"CI smoke test\"}"
+          echo; echo "Smoke test passed"
 
-      - name: Test backend API in CI (Curl)
+      - name: Dump state on failure
+        if: failure()
         run: |
-          kubectl port-forward service/taskboard-backend 8001:80 -n taskboard &
-          sleep 3
+          kubectl get all -n careslot
+          kubectl describe pods -n careslot | tail -80
+          kubectl logs -n careslot -l app.kubernetes.io/component=backend --tail=80 --all-containers
 
-          echo "🌐 Fetching health endpoint..."
-          curl -sf http://localhost:8001/health
-
-          echo -e "\n🌐 Fetching root API..."
-          curl -sf http://localhost:8001/
-
+  # ─────────────── 4. GITOPS: HAND THE NEW VERSION TO ARGO CD ───────────────
+  gitops-promote:
+    name: GitOps - bump image tag for Argo CD
+    needs: deploy-smoke-test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Write commit SHA into helm/careslot/values.yaml
+        env: {SHA: '${{ github.sha }}'}
+        run: |
+          yq -i '.backend.image.tag = strenv(SHA) | .frontend.image.tag = strenv(SHA)' helm/careslot/values.yaml
+          git diff --stat
+      - name: Commit and push (skip CI to avoid a loop)
+        run: |
+          git config user.name "careslot-ci"
+          git config user.email "careslot-ci@users.noreply.github.com"
+          git add helm/careslot/values.yaml
+          git diff --cached --quiet && { echo "nothing to promote"; exit 0; }
+          git commit -m "chore(gitops): deploy ${GITHUB_SHA::7} to careslot [skip ci]"
+          git push
