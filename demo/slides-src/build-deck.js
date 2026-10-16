@@ -102,7 +102,7 @@ function iconRow(slide, img, x, y, head, body, w = 5.6) {
     { text: "github.com/MadaraUchiha-tech/devsecops-python" },
   ], { x: 0.8, y: 5.3, w: 6, h: 0.8, fontSize: 14, color: "9FC3C7", margin: 0, isTextBox: true });
   s.addImage({ path: SHOTS + "01-app-schedule-ingress.png", x: 6.9, y: 1.9, w: 5.8, h: 3.63, shadow: shadow() });
-  s.addNotes("Hi, I'm <your name>. This is CareSlot, a clinic appointment scheduler, and the DevSecOps pipeline that takes it from my laptop to a monitored Kubernetes cluster.");
+  s.addNotes("Hello, and welcome. This is CareSlot, a clinic appointment scheduler, and the DevSecOps pipeline that takes it from my laptop to a monitored Kubernetes cluster.");
 
   // 2. Problem
   s = pres.addSlide({ masterName: "CONTENT", sectionTitle: "Overview" });

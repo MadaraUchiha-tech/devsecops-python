@@ -35,7 +35,7 @@ Terminal: large font (18pt+), repo root, `clear` before each section.
 
 | Slide | Say |
 |---|---|
-| 1. Title | "Hi, I'm <your name>. This is CareSlot, a clinic appointment scheduler, and the DevSecOps pipeline that takes it from my laptop to a monitored Kubernetes cluster." |
+| 1. Title | "Hello, and welcome. This is CareSlot, a clinic appointment scheduler, and the DevSecOps pipeline that takes it from my laptop to a monitored Kubernetes cluster." |
 | 2. Problem | "Small clinics still book on paper or in spreadsheets. Two receptionists can book the same doctor at the same time, and nobody knows who is in the waiting room. CareSlot solves that, and its main rule is that a doctor can never be double-booked." |
 | 3. Application | "React front desk, FastAPI backend, Postgres. Doctors, patients, appointments. Appointments follow a workflow, from scheduled to checked in to completed, and a booking that overlaps one the doctor already has comes back as a 409 conflict." |
 | 4. Tech stack | Read across the layers quickly: app, quality, containers, CI, security, infra, Kubernetes, observability. |
