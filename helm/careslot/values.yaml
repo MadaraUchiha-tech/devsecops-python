@@ -2,26 +2,23 @@
 backend:
   image:
     repository: ghcr.io/madarauchiha-tech/careslot-backend
-    tag: latest
+    tag: 40060d80ba44dabcb8405dc1437c27ec197fc0a5
     pullPolicy: IfNotPresent
   replicaCount: 2
   seedDemoData: true
   resources:
     requests: {cpu: 100m, memory: 160Mi}
     limits: {cpu: 500m, memory: 384Mi}
-
 frontend:
   image:
     repository: ghcr.io/madarauchiha-tech/careslot-frontend
-    tag: latest
+    tag: 40060d80ba44dabcb8405dc1437c27ec197fc0a5
     pullPolicy: IfNotPresent
   replicaCount: 2
   resources:
     requests: {cpu: 25m, memory: 32Mi}
     limits: {cpu: 200m, memory: 128Mi}
-
 imagePullSecrets: []
-
 postgres:
   enabled: true
   image: postgres:16-alpine
@@ -33,20 +30,17 @@ postgres:
   resources:
     requests: {cpu: 50m, memory: 128Mi}
     limits: {cpu: 500m, memory: 512Mi}
-
 ingress:
   enabled: true
   className: nginx
   host: careslot.local
   annotations: {}
   tls: []
-
 hpa:
   enabled: true
   minReplicas: 2
   maxReplicas: 6
   targetCPUUtilizationPercentage: 60
-
 monitoring:
   serviceMonitor:
     enabled: true
