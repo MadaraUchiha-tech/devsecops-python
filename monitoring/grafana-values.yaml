@@ -1,0 +1,18 @@
+# Grafana is installed by kube-prometheus-stack (see prometheus-values.yaml, "grafana:" block).
+# This file documents the standalone-chart equivalent for clusters that run Grafana separately:
+#   helm upgrade --install grafana grafana/grafana -n monitoring -f monitoring/grafana-values.yaml
+adminPassword: careslot-admin
+datasources:
+  datasources.yaml:
+    apiVersion: 1
+    datasources:
+      - name: Prometheus
+        type: prometheus
+        url: http://kube-prometheus-stack-prometheus.monitoring:9090
+        isDefault: true
+sidecar:
+  dashboards:
+    enabled: true
+    label: grafana_dashboard
+    labelValue: "1"
+    searchNamespace: ALL

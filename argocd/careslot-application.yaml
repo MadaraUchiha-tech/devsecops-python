@@ -1,0 +1,28 @@
+# GitOps: Argo CD watches helm/careslot on main. CI commits the new image SHA into values.yaml,
+# Argo CD notices the commit and rolls the cluster forward. Nobody runs kubectl apply by hand.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: careslot
+  namespace: argocd
+  finalizers: [resources-finalizer.argocd.argoproj.io]
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/MadaraUchiha-tech/devsecops-python.git
+    targetRevision: main
+    path: helm/careslot
+    helm:
+      releaseName: careslot
+      valueFiles: [values.yaml, values-local.yaml]
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: careslot
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions: [CreateNamespace=true, ServerSideApply=true]
+    retry:
+      limit: 5
+      backoff: {duration: 10s, factor: 2, maxDuration: 3m}
