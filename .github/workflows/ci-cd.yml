@@ -3,6 +3,7 @@ name: CareSlot CI/CD
 on:
   push:
     branches: [main]
+    paths-ignore: ['demo/**', '**/*.md']   # docs-only changes don't rebuild images
   pull_request:
     branches: [main]
   workflow_dispatch:
