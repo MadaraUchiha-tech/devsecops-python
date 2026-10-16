@@ -534,6 +534,6 @@ Pipeline: lint + pytest, frontend build, `terraform validate` + `helm lint`, sec
 
 | Required | Where |
 |---|---|
-| Video (MANDATORY) | [`demo/careslot-presentation.mp4`](demo/careslot-presentation.mp4): the slides, then a live walkthrough of the codebase, app, CI/CD run, Trivy, Terraform, Argo CD, Kubernetes, Prometheus and Grafana (11:50). Chapter times are in [`demo/README.md`](demo/README.md#video-chapters) |
+| Video (MANDATORY) | [`demo/careslot-presentation.mp4`](demo/careslot-presentation.mp4): the slides, then a live walkthrough of the codebase, app, CI/CD run, Trivy, Terraform, Argo CD, Kubernetes, Prometheus and Grafana (8:43). Chapter times are in [`demo/README.md`](demo/README.md#video-chapters) |
 | Slide deck (MANDATORY) | [`demo/CareSlot-presentation.pptx`](demo/CareSlot-presentation.pptx) · [`demo/CareSlot-presentation.pdf`](demo/CareSlot-presentation.pdf) (13 slides) |
 | README sections | Description (top), [architecture](#1-architecture), [tech stack](#2-tech-stack), [local setup](#4-run-it-locally), [CI/CD](#7-cicd-pipeline), [Terraform](#9-terraform-aws-infrastructure), [Kubernetes/Helm](#10-kubernetes-and-helm), [observability](#11-observability), [known issues](#13-known-issues-and-limitations) |
