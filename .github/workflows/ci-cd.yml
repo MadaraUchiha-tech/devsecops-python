@@ -28,7 +28,7 @@ jobs:
     defaults:
       run: {working-directory: backend}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -55,7 +55,7 @@ jobs:
     defaults:
       run: {working-directory: frontend}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -72,7 +72,7 @@ jobs:
     name: IaC - terraform validate + helm lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: hashicorp/setup-terraform@v3
         with: {terraform_version: 1.13.4}
       - name: terraform fmt
@@ -92,13 +92,13 @@ jobs:
     name: Security - secrets + IaC misconfig (Trivy fs)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Install Trivy
         run: curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sudo sh -s -- -b /usr/local/bin ${TRIVY_VERSION}
       - name: Secret scan (blocking)
         run: trivy fs --scanners secret --exit-code 1 --no-progress .
       - name: Terraform / Helm / Dockerfile misconfiguration report (advisory)
-        run: trivy fs --scanners misconfig --severity HIGH,CRITICAL --exit-code 0 --no-progress terraform helm backend frontend
+        run: trivy config --severity HIGH,CRITICAL --exit-code 0 --skip-dirs troubleshooting .
 
   # ─────────────── 2. BUILD → TRIVY IMAGE SCAN → PUSH TO GHCR ───────────────
   build-scan-push:
@@ -116,7 +116,7 @@ jobs:
     env:
       IMAGE: ghcr.io/madarauchiha-tech/careslot-${{ matrix.component }}:${{ github.sha }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: docker/setup-buildx-action@v3
 
       - name: Build image (tag = commit SHA)
@@ -173,7 +173,7 @@ jobs:
       contents: read
       packages: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: helm/kind-action@v1
         with: {cluster_name: careslot-ci}
       - uses: azure/setup-helm@v4
@@ -223,7 +223,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Write commit SHA into helm/careslot/values.yaml
         env: {SHA: '${{ github.sha }}'}
         run: |
