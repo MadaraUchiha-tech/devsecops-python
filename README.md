@@ -164,7 +164,7 @@ cd frontend && npm ci && npm run dev     # http://localhost:5173, proxies /api t
 
 ```bash
 cd backend
-pytest -v --cov=app      # 21 tests, ~96% coverage
+pytest -v --cov=app      # 21 tests, ~94% coverage
 ruff check . && ruff format --check .
 ```
 
@@ -314,8 +314,9 @@ kubectl create namespace argocd
 kubectl apply -n argocd --server-side -f https://raw.githubusercontent.com/argoproj/argo-cd/v3.5.4/manifests/install.yaml
 kubectl apply -f argocd/careslot-application.yaml
 
-# 3b. or plain Helm
-helm upgrade --install careslot helm/careslot -n careslot -f helm/careslot/values-local.yaml
+# 3b. or plain Helm (the demo runs a second, Helm-managed copy as careslot-staging)
+helm upgrade --install careslot-staging helm/careslot -n careslot-staging --create-namespace \
+  --set ingress.host=staging.careslot.local --set monitoring.serviceMonitor.enabled=false
 
 # 4. check
 kubectl get pods,svc,ingress,hpa -n careslot
