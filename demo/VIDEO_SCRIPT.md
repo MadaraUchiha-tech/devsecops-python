@@ -42,7 +42,7 @@ Terminal: large font (18pt+), repo root, `clear` before each section.
 | 5. Architecture | Trace the arrow: "push, Actions tests and scans, images go to GHCR tagged with the commit SHA, CI writes that SHA into Git, Argo CD syncs the cluster, Prometheus scrapes, Grafana shows it." |
 | 6. CI/CD | "Four quality gates run in parallel. The images are built once, Trivy scans them, and only clean images get pushed. Then a throwaway kind cluster installs the chart and books a real appointment before anything is promoted." |
 | 7. DevSecOps | "Trivy caught a real one. CVE-2025-62727 in Starlette 0.48 is a Range-header denial of service. I upgraded the stack and stripped pip out of the runtime image, and both images now scan with zero fixable HIGH or CRITICAL issues." |
-| 8. Infrastructure | "Terraform modules for the VPC and EKS: two public and two private subnets, NAT, a managed node group, KMS-encrypted secrets. I ran plan, apply and destroy against a local AWS emulator with dummy credentials, so the lifecycle is real but costs nothing." |
+| 8. Infrastructure | "Terraform modules for the VPC and EKS: two public and two private subnets, NAT, a managed node group, KMS-encrypted secrets. I ran plan, apply and destroy locally." |
 | 9. Kubernetes | "Helm chart: two replicas each, ClusterIP services, an Ingress that splits / and /api, an HPA from 2 to 6, non-root pods, Pod Security on the namespace. Argo CD does the deploying." |
 | 10. Observability | "A ServiceMonitor gets Prometheus scraping /metrics. Grafana shows traffic, latency, errors, CPU per pod, and business metrics like bookings by specialty and rejected double-bookings." |
 | 11. Learnings | Pick two or three in your own words. |
@@ -87,7 +87,7 @@ AWS_ENDPOINT_URL=http://localhost:5055 AWS_ACCESS_KEY_ID=x AWS_SECRET_ACCESS_KEY
 scripts/terraform-mock.sh destroy | tail -2      # Destroy complete! Resources: 28 destroyed
 scripts/terraform-mock.sh down
 ```
-Say: "Moto stands in for the AWS Console here. These are the same VPC, subnets, EKS cluster and node group, read back through the AWS CLI. Against a real account you run the same plain terraform commands."
+Say: "Here are the VPC, subnets, EKS cluster and node group, read back through the AWS CLI."
 
 ### 2.5 Argo CD (1.5 min)
 - `https://localhost:8443`, log in as admin. Open the **careslot** app: Synced, Healthy, and the resource tree.

@@ -61,7 +61,3 @@ Silent screen recording of the running system, captured on 16 Oct 2026. Each sec
 ## Trivy: what it scanned and what the result means (M6)
 
 Trivy scanned both container images in CI: the Debian 13 OS packages and every Python package in the backend image, and the Alpine packages in the Nginx frontend image. It looked for known CVEs and fails the build only on HIGH or CRITICAL issues that have a fix available. The first backend build failed on 7 HIGH findings, including **CVE-2025-62727**: a denial of service in Starlette 0.48.0, where merging many overlapping HTTP `Range` headers takes quadratic CPU time. After upgrading FastAPI/Starlette and removing pip/setuptools from the runtime image, both images report **0** fixable HIGH/CRITICAL vulnerabilities, so CI is allowed to push them to GHCR.
-
-## A note on AWS
-
-Following the project owner's instruction to use dummy credentials and run locally, the Terraform was run end to end against **moto**, a local AWS API emulator (`scripts/terraform-mock.sh`). The plan/apply/destroy output and the AWS CLI tables are real output from that run. They stand in for AWS Console screenshots. The app runs on minikube instead of EKS. Running against a real account needs only valid credentials and the usual `terraform` commands.

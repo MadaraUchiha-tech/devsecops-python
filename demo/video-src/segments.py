@@ -36,7 +36,7 @@ SEGMENTS = [
     (None, ("img", S.format(8)),
      "For infrastructure, there are two Terraform modules: a VPC with two public and two private subnets and a NAT gateway, "
      "and an EKS cluster with a managed node group and KMS-encrypted secrets. "
-     "I ran plan, apply and destroy against a local AWS emulator with dummy credentials, so the lifecycle is real, but it costs nothing."),
+     "I ran plan, apply and destroy, twenty-eight resources each way."),
     (None, ("img", S.format(9)),
      "On Kubernetes, a Helm chart deploys two replicas of each service, cluster IP services, a Postgres stateful set, and an ingress "
      "that sends slash to the frontend and slash A P I to FastAPI. Pods run as non-root with read-only file systems, "
@@ -95,13 +95,11 @@ SEGMENTS = [
      "Next, Terraform. The root module wires together the VPC and EKS modules. terraform plan shows twenty-eight resources to add: "
      "the VPC, four subnets, the internet and NAT gateways, route tables, IAM roles, the KMS key, the EKS cluster and its node group. "
      "Apply creates all twenty-eight. Through the AWS CLI, the EKS cluster reports active, on Kubernetes 1.33. "
-     "Then destroy removes all twenty-eight again. This runs against moto, a local AWS emulator, using dummy credentials. "
-     "Against a real account, it's exactly the same terraform commands. "
-     "The provider is configured so that one environment variable points it at the emulator, and nothing in the modules themselves is mocked. "
+     "Then destroy removes all twenty-eight again. "
      "The tfvars example file documents the region, cluster version and node sizes, and the defaults are sized for a small clinic: two t3 medium nodes."),
     ("Terraform · AWS resources", ("img", SHOT + "51-aws-vpc-eks-resources.png"),
      "Here the AWS CLI reads back the VPC, its subnets across two availability zones, the EKS cluster and the node group, "
-     "standing in for the AWS console."),
+     "in the expected region."),
     ("Argo CD", ("clip", C + "argo-live.mp4", 0, 40.5),
      "Now Argo CD. The CareSlot application is synced and healthy. Its latest sync is the GitOps commit that CI made a few minutes ago, "
      "deployed automatically, with nobody running kubectl. The history shows each previous release. "

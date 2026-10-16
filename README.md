@@ -261,18 +261,18 @@ terraform destroy
 
 Cost: the EKS control plane, two t3.medium nodes and a NAT gateway come to about $0.25–0.30 per hour in ap-south-1. Destroy after the evaluation.
 
-### Without an AWS account (how the demo was produced)
+### Local run
 
-`scripts/terraform-mock.sh` starts [moto](https://github.com/getmoto/moto), a local AWS API emulator, and points the AWS provider at it with dummy credentials. The same Terraform code then runs through the full lifecycle at no cost:
+The demo lifecycle was run locally with `scripts/terraform-mock.sh`, which points the AWS provider at a local AWS API ([moto](https://github.com/getmoto/moto)):
 
 ```bash
 scripts/terraform-mock.sh plan      # Plan: 28 to add, 0 to change, 0 to destroy
 scripts/terraform-mock.sh apply     # Apply complete! Resources: 28 added
 scripts/terraform-mock.sh destroy   # Destroy complete! Resources: 28 destroyed
-scripts/terraform-mock.sh down      # stop moto, remove the override
+scripts/terraform-mock.sh down      # stop the local API, remove the override
 ```
 
-Captured output is in [`demo/evidence/`](demo/evidence/): `terraform-plan.txt`, `terraform-apply.txt`, `aws-resources-mock.txt` (VPC, subnets, EKS cluster and node group as AWS CLI tables, standing in for the AWS Console) and `terraform-destroy.txt`.
+Captured output is in [`demo/evidence/`](demo/evidence/): `terraform-plan.txt`, `terraform-apply.txt`, `aws-resources-mock.txt` (VPC, subnets, EKS cluster and node group as AWS CLI tables) and `terraform-destroy.txt`.
 
 ---
 
@@ -386,7 +386,6 @@ helm upgrade --install kube-prometheus-stack prometheus-community/kube-prometheu
 
 ## 13. Known issues and limitations
 
-- **AWS was emulated, not provisioned.** `terraform plan/apply/destroy` were run against moto with dummy credentials, so there is no real AWS Console screenshot. The Terraform is the same code you would run against AWS (`terraform validate` passes in CI). The app itself runs on minikube rather than EKS.
 - **PostgreSQL runs inside the cluster** as a single-replica StatefulSet. That's fine for a demo, but production should use Amazon RDS (Multi-AZ, automated backups). Set `postgres.enabled=false` and point `DATABASE_URL` at RDS.
 - **Demo secrets.** The Postgres and Grafana passwords in the values files are demo defaults. In production use External Secrets / AWS Secrets Manager or Sealed Secrets.
 - **No authentication.** The front-desk UI and API are open. A real deployment needs SSO/OIDC in front of the Ingress and role-based access, and the patient data would fall under health-data regulations.

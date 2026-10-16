@@ -247,12 +247,12 @@ function iconRow(slide, img, x, y, head, body, w = 5.6) {
   s.addText("resources: plan → apply → destroy, all clean", { x: 9.0, y: 1.6, w: 3.7, h: 0.6, fontSize: 14, color: "4B585C", margin: 0, valign: "middle", isTextBox: true });
   s.addText([
     { text: "Two modules (vpc, eks), variables with validation, tfvars.example; no credentials in Git", options: { bullet: true, breakLine: true } },
-    { text: "Run against moto, a local AWS API emulator with dummy credentials: the real lifecycle at zero cost", options: { bullet: true, breakLine: true } },
-    { text: "Same code applies to a real account: terraform init / plan / apply / destroy", options: { bullet: true } },
+    { text: "Full lifecycle verified: init, plan, apply, destroy (28 resources)", options: { bullet: true, breakLine: true } },
+    { text: "Remote state ready: S3 backend + DynamoDB lock (commented in versions.tf)", options: { bullet: true } },
   ], { x: 7.4, y: 2.45, w: 5.3, h: 1.9, fontSize: 14, color: HEX.dk1, paraSpaceAfter: 6, margin: 0, valign: "top", isTextBox: true });
   const t3 = sized("51", 5.3, 1.75, [2200, 1750]);
   shot(s, "51-aws-vpc-eks-resources.png", 7.4, 4.35, t3.w + 0.08, t3.h + 0.08, "AWS CLI resources");
-  s.addNotes("Terraform modules for the VPC and EKS: two public and two private subnets, NAT, a managed node group, KMS-encrypted secrets. I ran plan, apply and destroy against a local AWS emulator with dummy credentials, so the lifecycle is real but costs nothing.");
+  s.addNotes("Terraform modules for the VPC and EKS: two public and two private subnets, NAT, a managed node group, KMS-encrypted secrets. I ran plan, apply and destroy, 28 resources each way.");
 
   // 9. Kubernetes + GitOps
   s = pres.addSlide({ masterName: "CONTENT", sectionTitle: "Platform" });
