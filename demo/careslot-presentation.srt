@@ -1,0 +1,568 @@
+1
+00:00:00,300 --> 00:00:01,371
+Hello, and welcome.
+
+2
+00:00:01,371 --> 00:00:09,890
+This is CareSlot, a clinic appointment scheduler, and the DevSecOps pipeline that takes it from a laptop all the way to a monitored Kubernetes cluster.
+
+3
+00:00:09,890 --> 00:00:14,460
+I'll start with the slides, and then do a live walkthrough of everything running.
+
+4
+00:00:15,366 --> 00:00:19,594
+Small clinics still book appointments on paper, or in shared spreadsheets.
+
+5
+00:00:19,594 --> 00:00:26,449
+Two receptionists can book the same doctor at the same time, and nobody really knows who is sitting in the waiting room.
+
+6
+00:00:26,449 --> 00:00:27,592
+CareSlot fixes that.
+
+7
+00:00:27,592 --> 00:00:31,077
+Its main rule is simple: a doctor can never be double-booked.
+
+8
+00:00:31,976 --> 00:00:37,565
+The application is a React front desk, a FastAPI backend, and a Postgres database.
+
+9
+00:00:37,565 --> 00:00:40,701
+It manages doctors, patients and appointments.
+
+10
+00:00:40,701 --> 00:00:46,290
+Every appointment follows a workflow, from scheduled, to checked in, to completed.
+
+11
+00:00:46,290 --> 00:00:52,629
+And if a booking overlaps one the doctor already has, the API refuses it with a 409 conflict.
+
+12
+00:00:53,543 --> 00:00:55,786
+Here is the stack, layer by layer.
+
+13
+00:00:55,786 --> 00:00:59,678
+React, FastAPI, SQLAlchemy and Alembic for the application.
+
+14
+00:00:59,678 --> 00:01:01,525
+Pytest and Ruff for quality.
+
+15
+00:01:01,525 --> 00:01:05,022
+Multi-stage Docker images that run as non-root users.
+
+16
+00:01:05,022 --> 00:01:08,716
+GitHub Actions and the GitHub container registry for CI.
+
+17
+00:01:08,716 --> 00:01:10,563
+Trivy for security scanning.
+
+18
+00:01:10,563 --> 00:01:13,070
+Terraform for the AWS network and EKS.
+
+19
+00:01:13,070 --> 00:01:16,368
+Helm, ingress engine X and Argo CD for Kubernetes.
+
+20
+00:01:16,368 --> 00:01:20,393
+And the kube-prometheus stack with Grafana for observability.
+
+21
+00:01:21,310 --> 00:01:22,837
+This is the architecture.
+
+22
+00:01:22,837 --> 00:01:24,487
+A developer pushes to main.
+
+23
+00:01:24,487 --> 00:01:31,820
+GitHub Actions tests and scans the code, builds the images, and pushes them to the registry, tagged with the commit SHA.
+
+24
+00:01:31,820 --> 00:01:34,142
+CI then writes that SHA back into Git.
+
+25
+00:01:34,142 --> 00:01:37,136
+Argo CD notices the change and syncs the cluster.
+
+26
+00:01:37,136 --> 00:01:41,231
+Prometheus scrapes the backend, and Grafana shows what's happening.
+
+27
+00:01:42,143 --> 00:01:43,876
+The pipeline has six stages.
+
+28
+00:01:43,876 --> 00:01:51,612
+Four quality gates run in parallel: lint and tests, the frontend build, Terraform validate with helm lint, and a secret scan.
+
+29
+00:01:51,612 --> 00:01:54,582
+The images are built once, and Trivy scans them.
+
+30
+00:01:54,582 --> 00:01:56,377
+Only clean images are pushed.
+
+31
+00:01:56,377 --> 00:02:03,308
+Then a throwaway kind cluster installs the Helm chart and books a real appointment, before anything is promoted.
+
+32
+00:02:04,210 --> 00:02:06,293
+And Trivy caught a real problem.
+
+33
+00:02:06,293 --> 00:02:17,167
+The very first backend image failed the gate on seven high severity findings, including C V E 2025 62727, a denial of service bug in Starlette's Range header handling.
+
+34
+00:02:17,167 --> 00:02:21,269
+I upgraded the stack and stripped pip out of the runtime image.
+
+35
+00:02:21,269 --> 00:02:25,371
+Both images now scan with zero fixable high or critical issues.
+
+36
+00:02:26,276 --> 00:02:38,535
+For infrastructure, there are two Terraform modules: a VPC with two public and two private subnets and a NAT gateway, and an EKS cluster with a managed node group and KMS-encrypted secrets.
+
+37
+00:02:38,535 --> 00:02:46,967
+I ran plan, apply and destroy against a local AWS emulator with dummy credentials, so the lifecycle is real, but it costs nothing.
+
+38
+00:02:47,876 --> 00:02:59,650
+On Kubernetes, a Helm chart deploys two replicas of each service, cluster IP services, a Postgres stateful set, and an ingress that sends slash to the frontend and slash A P I to FastAPI.
+
+39
+00:02:59,650 --> 00:03:05,316
+Pods run as non-root with read-only file systems, and the namespace enforces Pod Security.
+
+40
+00:03:05,316 --> 00:03:07,457
+Argo CD does all of the deploying.
+
+41
+00:03:08,357 --> 00:03:10,965
+The backend has a horizontal pod autoscaler.
+
+42
+00:03:10,965 --> 00:03:19,855
+Under sixty concurrent workers, the backend went from two pods to six, the configured maximum, and it scaled back down after the stabilisation window.
+
+43
+00:03:19,855 --> 00:03:22,522
+You'll see this happen live in a few minutes.
+
+44
+00:03:23,424 --> 00:03:29,367
+For observability, a service monitor gets Prometheus scraping the backend's metrics endpoint.
+
+45
+00:03:29,367 --> 00:03:38,634
+The Grafana dashboard shows traffic, latency, errors, CPU per pod, and business metrics, like bookings by specialty and rejected double-bookings.
+
+46
+00:03:39,535 --> 00:03:40,839
+Four things I learned.
+
+47
+00:03:40,839 --> 00:03:43,802
+Scanners find real problems, not theoretical ones.
+
+48
+00:03:43,802 --> 00:03:53,641
+Start-up order is a deployment concern: two replicas racing the database migration crash-looped until I added an advisory lock and a wait-for-database init container.
+
+49
+00:03:53,641 --> 00:03:56,427
+GitOps makes the cluster boring, in a good way.
+
+50
+00:03:56,427 --> 00:04:01,109
+And the starter code had real bugs, like an ingress pointing at the wrong port.
+
+51
+00:04:01,109 --> 00:04:02,710
+Troubleshooting is the job.
+
+52
+00:04:03,610 --> 00:04:04,694
+That's the overview.
+
+53
+00:04:04,694 --> 00:04:06,267
+Now let's see it all running.
+
+54
+00:04:07,177 --> 00:04:09,157
+First, the codebase, on GitHub.
+
+55
+00:04:09,157 --> 00:04:14,012
+This is my fork of the starter repository, with the full history of commits.
+
+56
+00:04:14,012 --> 00:04:22,381
+The repo has the backend, the frontend, the Helm chart, Terraform, Argo CD, monitoring and the CI workflow, each in its own folder.
+
+57
+00:04:22,381 --> 00:04:35,477
+In the appointments router, ALLOWED TRANSITIONS defines the status workflow, and ensure slot free is the double-booking rule: it looks for any overlapping appointment for the same doctor, and raises a 409.
+
+58
+00:04:35,477 --> 00:04:41,546
+The test fixtures swap the real database for in-memory S Q Lite, so tests never touch Postgres.
+
+59
+00:04:41,546 --> 00:04:44,932
+The Dockerfile is multi-stage and runs as user 10001.
+
+60
+00:04:44,932 --> 00:04:56,814
+Then the Helm templates, the VPC and EKS Terraform modules, the Argo CD application, which points at the Helm chart on the main branch with automated sync, prune and self-heal turned on.
+
+61
+00:04:56,814 --> 00:05:01,350
+And finally the CI workflow, which runs everything you're about to see.
+
+62
+00:05:16,987 --> 00:05:19,649
+Here is the app, served through the ingress.
+
+63
+00:05:19,649 --> 00:05:24,127
+I try to book Ananya with an orthopedist at a time the doctor already has.
+
+64
+00:05:24,127 --> 00:05:27,697
+The API rejects it with a conflict, and the form shows why.
+
+65
+00:05:27,697 --> 00:05:30,602
+I pick a free time and the booking goes through.
+
+66
+00:05:30,602 --> 00:05:33,688
+Then I check the patient in and complete the visit.
+
+67
+00:05:33,688 --> 00:05:41,918
+The patients tab has search, the doctors tab shows who is on duty, and FastAPI generates interactive API docs for all sixteen endpoints.
+
+68
+00:05:41,918 --> 00:05:43,431
+Notice the sidebar label.
+
+69
+00:05:43,431 --> 00:05:45,125
+We'll change it in a moment.
+
+70
+00:05:46,026 --> 00:05:47,592
+Now CI and CD, end to end.
+
+71
+00:05:47,592 --> 00:05:50,965
+I make a visible change: a release label in the sidebar.
+
+72
+00:05:50,965 --> 00:05:56,748
+First the recent history, then a one-line change to the sidebar label, and the diff to prove it.
+
+73
+00:05:56,748 --> 00:05:58,495
+I commit it and push to main.
+
+74
+00:05:58,495 --> 00:06:00,965
+That push is the only thing I do by hand.
+
+75
+00:06:00,965 --> 00:06:03,073
+Everything after this is automated.
+
+76
+00:06:05,559 --> 00:06:08,932
+The push triggers the CareSlot pipeline in GitHub Actions.
+
+77
+00:06:08,932 --> 00:06:12,131
+The four quality gates are already running in parallel.
+
+78
+00:06:12,131 --> 00:06:25,044
+The backend job lints with Ruff and runs pytest, the frontend job runs the production build, the infrastructure job runs terraform validate and helm lint, and the security job scans the whole repository for leaked secrets.
+
+79
+00:06:25,044 --> 00:06:29,115
+The image jobs for the backend and frontend wait for all four to pass.
+
+80
+00:06:29,115 --> 00:06:31,907
+If any gate fails, nothing gets built or pushed.
+
+81
+00:06:31,907 --> 00:06:35,455
+After the images, the deploy and GitOps jobs run in sequence.
+
+82
+00:06:36,359 --> 00:06:49,655
+From the terminal, every job finished green: security, frontend, Terraform and Helm validation, backend tests, both image builds with their Trivy gates, the deploy smoke test on kind, and the GitOps promotion.
+
+83
+00:06:49,655 --> 00:06:51,500
+About three minutes in total.
+
+84
+00:06:52,400 --> 00:06:54,966
+In the browser, the run graph is all green.
+
+85
+00:06:54,966 --> 00:07:00,935
+The registry has the new backend image, tagged with the full commit SHA, and there is no latest tag.
+
+86
+00:07:00,935 --> 00:07:08,397
+In the commit history, the CI bot has added a GitOps commit, and in the values file, the image tags now point at the new SHA.
+
+87
+00:07:08,397 --> 00:07:10,545
+That commit is what Argo CD deploys.
+
+88
+00:07:10,545 --> 00:07:15,559
+Notice it's marked skip C I, so the bot's commit doesn't trigger the pipeline again.
+
+89
+00:07:15,559 --> 00:07:23,976
+The whole path, from my push to a promotable release, took a little over three minutes, with no manual steps and no credentials on my laptop.
+
+90
+00:07:32,033 --> 00:07:33,883
+Locally, the same checks pass.
+
+91
+00:07:33,883 --> 00:07:38,507
+Ruff is clean, and twenty-one tests pass with ninety-four percent coverage.
+
+92
+00:07:38,507 --> 00:07:46,399
+Here is Trivy against the original backend image: exit code one, seven high findings, including the Starlette denial of service.
+
+93
+00:07:46,399 --> 00:07:50,468
+And against the fixed image: exit code zero, nothing fixable left.
+
+94
+00:07:50,468 --> 00:07:56,325
+In CI, this exact check is the gate that decides whether an image is allowed into the registry.
+
+95
+00:07:58,500 --> 00:07:59,586
+Next, Terraform.
+
+96
+00:07:59,586 --> 00:08:03,320
+The root module wires together the VPC and EKS modules.
+
+97
+00:08:03,320 --> 00:08:15,470
+terraform plan shows twenty-eight resources to add: the VPC, four subnets, the internet and NAT gateways, route tables, IAM roles, the KMS key, the EKS cluster and its node group.
+
+98
+00:08:15,470 --> 00:08:17,575
+Apply creates all twenty-eight.
+
+99
+00:08:17,575 --> 00:08:22,462
+Through the AWS CLI, the EKS cluster reports active, on Kubernetes 1.33.
+
+100
+00:08:22,462 --> 00:08:25,449
+Then destroy removes all twenty-eight again.
+
+101
+00:08:25,449 --> 00:08:30,201
+This runs against moto, a local AWS emulator, using dummy credentials.
+
+102
+00:08:30,201 --> 00:08:34,613
+Against a real account, it's exactly the same terraform commands.
+
+103
+00:08:34,613 --> 00:08:43,777
+The provider is configured so that one environment variable points it at the emulator, and nothing in the modules themselves is mocked.
+
+104
+00:08:43,777 --> 00:08:53,620
+The tfvars example file documents the region, cluster version and node sizes, and the defaults are sized for a small clinic: two t3 medium nodes.
+
+105
+00:08:57,200 --> 00:09:07,889
+Here the AWS CLI reads back the VPC, its subnets across two availability zones, the EKS cluster and the node group, standing in for the AWS console.
+
+106
+00:09:08,800 --> 00:09:09,558
+Now Argo CD.
+
+107
+00:09:09,558 --> 00:09:12,527
+The CareSlot application is synced and healthy.
+
+108
+00:09:12,527 --> 00:09:20,169
+Its latest sync is the GitOps commit that CI made a few minutes ago, deployed automatically, with nobody running kubectl.
+
+109
+00:09:20,169 --> 00:09:22,695
+The history shows each previous release.
+
+110
+00:09:22,695 --> 00:09:27,180
+To show self-healing, I scale the frontend down to one replica by hand.
+
+111
+00:09:27,180 --> 00:09:33,622
+Argo CD detects the drift, the app goes to progressing, and it restores two replicas, back to healthy.
+
+112
+00:09:33,622 --> 00:09:46,191
+The tree view shows every resource Argo CD manages: the deployments, replica sets and pods, the services, the ingress, the stateful set, the autoscaler, the service monitor and the Grafana dashboard.
+
+113
+00:09:47,371 --> 00:09:49,314
+The same thing from the terminal.
+
+114
+00:09:49,314 --> 00:09:51,551
+The application is synced and healthy.
+
+115
+00:09:51,551 --> 00:09:53,199
+I scale the frontend to one.
+
+116
+00:09:53,199 --> 00:09:56,084
+For a few seconds, only one of two pods is ready.
+
+117
+00:09:56,084 --> 00:10:02,148
+Within about ten seconds, it's back to two out of two, and the application is still synced and healthy.
+
+118
+00:10:02,148 --> 00:10:05,739
+Git is the source of truth, and manual drift doesn't survive.
+
+119
+00:10:10,705 --> 00:10:12,722
+Here is the cluster with kubectl.
+
+120
+00:10:12,722 --> 00:10:16,513
+All pods are running: two backend, two frontend, and Postgres.
+
+121
+00:10:16,513 --> 00:10:20,976
+Then the services, the ingress on careslot dot local, and the autoscaler.
+
+122
+00:10:20,976 --> 00:10:24,705
+Helm list shows the staging release and the monitoring stack.
+
+123
+00:10:24,705 --> 00:10:28,863
+Both deployments run the image tagged with the commit I just pushed.
+
+124
+00:10:28,863 --> 00:10:31,308
+And the API answers through the ingress.
+
+125
+00:10:34,705 --> 00:10:36,654
+Now the autoscaler under load.
+
+126
+00:10:36,654 --> 00:10:40,489
+I start a load test with sixty workers and watch the H P A.
+
+127
+00:10:40,489 --> 00:10:47,313
+CPU jumps well past the sixty percent target, and replicas climb from two, to three, to six, the maximum.
+
+128
+00:10:47,313 --> 00:10:48,678
+This clip is sped up.
+
+129
+00:10:49,578 --> 00:10:57,408
+In Prometheus, the targets page shows the CareSlot backend service monitor, with every backend pod up, six out of six while scaled out.
+
+130
+00:10:57,408 --> 00:11:02,513
+A query for requests per second per pod shows the traffic spreading across the new pods.
+
+131
+00:11:02,513 --> 00:11:09,068
+And the custom business metric counts appointments booked, labelled by specialty, coming from the app's own code.
+
+132
+00:11:11,483 --> 00:11:14,184
+Finally, Grafana, live during the load test.
+
+133
+00:11:14,184 --> 00:11:16,701
+Requests per second climb past a hundred.
+
+134
+00:11:16,701 --> 00:11:25,359
+Latency percentiles, the five hundred error ratio stays at zero, and the backend pod count goes from three to six as the autoscaler responds.
+
+135
+00:11:25,359 --> 00:11:27,876
+CPU per pod spreads out as new pods join.
+
+136
+00:11:27,876 --> 00:11:33,340
+Further down are bookings by specialty, and status changes with rejected double-bookings.
+
+137
+00:11:33,340 --> 00:11:42,059
+The dashboard is shipped as a config map in the Helm chart, so Grafana loads it automatically, and it's versioned in Git like everything else.
+
+138
+00:11:42,059 --> 00:11:43,655
+This clip is also sped up.
+
+139
+00:11:50,783 --> 00:11:51,573
+So, to recap.
+
+140
+00:11:51,573 --> 00:11:57,286
+Every change goes through tests and a security gate, and every image is traceable to a commit.
+
+141
+00:11:57,286 --> 00:12:04,154
+Git is the only way into the cluster, Argo CD keeps it that way, and Prometheus and Grafana show what it's doing.
+
+142
+00:12:04,154 --> 00:12:05,552
+Thank you for watching.
+

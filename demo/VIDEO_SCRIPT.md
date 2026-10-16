@@ -1,5 +1,7 @@
 # CareSlot: presentation video script
 
+> The finished video is `demo/careslot-presentation.mp4`. This script is kept for re-recording with your own voice.
+
 Target length: **12–15 minutes**. Record at 1920×1080. Follow the order SUBMISSION.md asks for: slides first, then the live walkthrough. Save the final file as `demo/careslot-presentation.mp4`. If it is over 100 MB, attach it to a GitHub Release instead of committing it, and link it in `demo/README.md`.
 
 `demo/recordings/` has raw screen captures of every step (browser + terminal). Use them as B-roll or as a fallback if a live step misbehaves. `demo/screenshots/` has the stills.

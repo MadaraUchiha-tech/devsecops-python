@@ -3,12 +3,32 @@
 | File | What |
 |---|---|
 | `CareSlot-presentation.pptx` / `.pdf` | 13-slide deck: overview, stack, architecture, CI/CD, DevSecOps, Terraform, Kubernetes/GitOps, autoscaling, observability, learnings. Speaker notes are in the PPTX. |
-| `careslot-presentation.mp4` | **Presentation video: record it with `VIDEO_SCRIPT.md`** (see below) |
+| `careslot-presentation.mp4` | **Presentation video** (12:06, 1080p, narrated, English subtitle track). Chapters below |
+| `careslot-presentation.srt` | Captions for the video |
 | `VIDEO_SCRIPT.md` | Narration and the exact commands for each part of the video, in the order SUBMISSION.md asks for |
 | `recordings/` | Raw screen captures for B-roll or as a fallback |
 | `screenshots/` | Every screenshot GRADING.md asks for |
 | `evidence/` | The raw terminal output behind the terminal screenshots |
 | `slides-src/build-deck.js` | pptxgenjs script that generates the deck |
+| `video-src/` | Narration text and the ffmpeg assembly script used to build the video |
+
+## Video chapters
+
+Part 1 is the slides; part 2 is the live walkthrough, recorded on 16 Oct 2026 against the running system. The CI run shown is a real push (`6a2d012`, [run 38918464521](https://github.com/MadaraUchiha-tech/devsecops-python/actions/runs/38918464521)), which Argo CD then deployed from the CI bot's GitOps commit `22c7adf`. Narration is synthesised (macOS text-to-speech). The HPA and Grafana clips are sped up, and the video says so where it happens.
+
+| Time | Section |
+|---|---|
+| 0:00 | Slides: problem, application, tech stack, architecture, CI/CD, DevSecOps, Terraform, Kubernetes, autoscaling, observability, learnings |
+| 4:06 | Codebase: repo layout, double-booking rule, test fixtures, Dockerfile, Helm, Terraform, Argo CD, workflow |
+| 5:16 | The app through the Ingress: 409 conflict, booking, check-in, complete |
+| 5:45 | CI/CD: push a change, pipeline running, all 8 jobs green, GHCR SHA tag, GitOps commit |
+| 7:31 | DevSecOps: pytest + Ruff, Trivy failing the pre-fix image, passing the fixed one |
+| 7:58 | Terraform: plan (28 to add), apply, AWS CLI read-back of VPC and EKS, destroy |
+| 9:08 | Argo CD: auto-synced to the new commit, history, self-heal in the UI and terminal |
+| 10:10 | Kubernetes: pods, services, Ingress, HPA, `helm list`, image SHA; HPA scaling 2 → 6 under load |
+| 10:49 | Prometheus: targets UP (6/6), request rate per pod, business metric |
+| 11:11 | Grafana: live dashboard during the load test |
+| 11:50 | Recap |
 
 ## Recordings
 
