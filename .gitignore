@@ -1,16 +1,39 @@
+# Editors / OS
 .idea/
 .vscode/
-node_modules/
-dist/
-target/
-*.log
+.DS_Store
+
+# Secrets & local env
 .env
-.terraform/
-*.tfstate
-*.tfstate.*
+.env.*
+!.env.example
+*.pem
+kubeconfig*
 
 # Python
 __pycache__/
 *.py[cod]
-*.pyo
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
 *.db
+
+# Node
+node_modules/
+dist/
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+tfplan
+terraform.tfvars
+crash.log
+
+# Logs
+*.log
