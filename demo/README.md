@@ -3,7 +3,7 @@
 | File | What |
 |---|---|
 | `CareSlot-presentation.pptx` / `.pdf` | 13-slide deck: overview, stack, architecture, CI/CD, DevSecOps, Terraform, Kubernetes/GitOps, autoscaling, observability, learnings. Speaker notes are in the PPTX. |
-| `careslot-presentation.mp4` | **Presentation video** (6:34, 1080p, no audio): live walkthrough, chapters below |
+| `careslot-presentation.mp4` | **Presentation video** (11:50, 1080p, no audio): slides, then the live walkthrough; chapters below |
 | `VIDEO_SCRIPT.md` | Narration and the exact commands for each part of the video, in the order SUBMISSION.md asks for |
 | `recordings/` | Raw screen captures for B-roll or as a fallback |
 | `screenshots/` | Every screenshot GRADING.md asks for |
@@ -13,18 +13,20 @@
 
 ## Video chapters
 
-Silent screen recording of the running system, captured on 16 Oct 2026. Each section has an on-screen label. The CI run shown is a real push ([run 38918464521](https://github.com/MadaraUchiha-tech/devsecops-python/actions/runs/38918464521)), which Argo CD then deployed from the CI bot's GitOps commit. The Terraform, HPA and Grafana clips are sped up.
+Silent video in the order GRADING.md asks for: the slides first, then a live walkthrough of the running system, captured on 16 Oct 2026. Each live section has an on-screen label. The CI section shows a real push going through the pipeline and Argo CD deploying the result. The Terraform, HPA and Grafana clips are sped up.
 
 | Time | Section |
 |---|---|
-| 0:00 | The app through the Ingress: 409 conflict, booking, check-in, complete, patients, doctors, API docs |
-| 0:29 | CI/CD: push a change, pipeline running, all 8 jobs green, GHCR SHA tag, GitOps commit |
-| 2:15 | DevSecOps: pytest + Ruff, Trivy failing the pre-fix image, passing the fixed one |
-| 2:41 | Terraform: plan (28 to add), apply, AWS CLI read-back of VPC and EKS, destroy |
-| 3:51 | Argo CD: auto-synced to the new commit, history, self-heal in the UI and terminal |
-| 4:53 | Kubernetes: pods, services, Ingress, HPA, `helm list`, image SHA; HPA scaling 2 → 6 under load |
-| 5:32 | Prometheus: targets UP (6/6), request rate per pod, business metric |
-| 5:54 | Grafana: live dashboard during the load test |
+| 0:00 | Slides: problem, application, tech stack, architecture, CI/CD, DevSecOps, Terraform, Kubernetes, autoscaling, observability, learnings |
+| 4:06 | Codebase: repo layout, double-booking rule, test fixtures, Dockerfile, Helm templates, Terraform modules, Argo CD app, workflow |
+| 5:16 | The app through the Ingress: 409 conflict, booking, check-in, complete, patients, doctors, API docs |
+| 5:45 | CI/CD: push a change, pipeline running, all 8 jobs green, GHCR SHA tag, GitOps commit |
+| 7:31 | DevSecOps: pytest + Ruff, Trivy failing the pre-fix image, passing the fixed one |
+| 7:58 | Terraform: plan (28 to add), apply, AWS CLI read-back of VPC and EKS, destroy |
+| 9:08 | Argo CD: auto-synced to the new commit, history, self-heal in the UI and terminal |
+| 10:10 | Kubernetes: pods, services, Ingress, HPA, `helm list`, image SHA; HPA scaling 2 → 6 under load |
+| 10:49 | Prometheus: targets UP (6/6), request rate per pod, business metric |
+| 11:11 | Grafana: live dashboard during the load test |
 
 ## Recordings
 
