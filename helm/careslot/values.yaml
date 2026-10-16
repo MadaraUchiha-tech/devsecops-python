@@ -2,7 +2,7 @@
 backend:
   image:
     repository: ghcr.io/madarauchiha-tech/careslot-backend
-    tag: 6a2d012d1de4c2c359311df1b725f4937911a6a0
+    tag: 4002aec5ce31ddd6c1da0570964921d684a398e3
     pullPolicy: IfNotPresent
   replicaCount: 2
   seedDemoData: true
@@ -12,7 +12,7 @@ backend:
 frontend:
   image:
     repository: ghcr.io/madarauchiha-tech/careslot-frontend
-    tag: 6a2d012d1de4c2c359311df1b725f4937911a6a0
+    tag: 4002aec5ce31ddd6c1da0570964921d684a398e3
     pullPolicy: IfNotPresent
   replicaCount: 2
   resources:
